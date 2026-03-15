@@ -5,15 +5,42 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rqm-core"
 version = "0.1.0"
-description = "Core quaternion and SU(2) math library for the RQM Python ecosystem"
+description = "Core quaternion, spinor, SU(2), and Bloch mathematics for the RQM Python ecosystem"
 authors = [{ name = "RQM Technologies" }]
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24"]
+keywords = [
+    "quaternion",
+    "su2",
+    "bloch sphere",
+    "spinor",
+    "quantum",
+    "linear algebra",
+    "rotation",
+    "mathematics",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Typing :: Typed",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov>=4.0"]
+
+[project.urls]
+"Source Code" = "https://github.com/RQM-Technologies-dev/rqm-core"
+"Bug Tracker" = "https://github.com/RQM-Technologies-dev/rqm-core/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

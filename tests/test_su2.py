@@ -11,7 +11,7 @@ from rqm_core.su2 import (
     su2_to_quaternion,
     axis_angle_to_su2,
     su2_identity,
-    is_unitary_matrix,
+    is_unitary,
     determinant_close_to_one,
 )
 
@@ -39,7 +39,7 @@ def test_su2_identity_values():
 def test_quaternion_to_su2_unitary():
     q = Quaternion.from_axis_angle("x", 0.6)
     m = quaternion_to_su2(q)
-    assert is_unitary_matrix(m)
+    assert is_unitary(m)
 
 
 def test_quaternion_to_su2_det_one():
@@ -50,7 +50,7 @@ def test_quaternion_to_su2_det_one():
 
 def test_axis_angle_to_su2_unitary():
     m = axis_angle_to_su2("z", math.pi / 4)
-    assert is_unitary_matrix(m)
+    assert is_unitary(m)
 
 
 def test_axis_angle_to_su2_det_one():
@@ -95,12 +95,12 @@ def test_su2_identity_to_quaternion():
 
 def test_is_unitary_true():
     m = axis_angle_to_su2("x", 1.0)
-    assert is_unitary_matrix(m)
+    assert is_unitary(m)
 
 
 def test_is_unitary_false():
     bad = np.array([[2.0, 0.0], [0.0, 0.5]], dtype=np.complex128)
-    assert not is_unitary_matrix(bad)
+    assert not is_unitary(bad)
 
 
 def test_determinant_close_to_one_true():
@@ -111,3 +111,28 @@ def test_determinant_close_to_one_true():
 def test_determinant_close_to_one_false():
     bad = np.array([[2.0, 0.0], [0.0, 2.0]], dtype=np.complex128)
     assert not determinant_close_to_one(bad)
+
+
+# ---------------------------------------------------------------------------
+# validate_su2_matrix
+# ---------------------------------------------------------------------------
+
+
+def test_validate_su2_matrix_valid():
+    from rqm_core.su2 import validate_su2_matrix
+    m = axis_angle_to_su2("z", 1.0)
+    validate_su2_matrix(m)  # should not raise
+
+
+def test_validate_su2_matrix_non_unitary():
+    from rqm_core.su2 import validate_su2_matrix
+    bad = np.array([[2.0, 0.0], [0.0, 0.5]], dtype=np.complex128)
+    with pytest.raises(ValueError, match="unitary"):
+        validate_su2_matrix(bad)
+
+
+def test_validate_su2_matrix_wrong_shape():
+    from rqm_core.su2 import validate_su2_matrix
+    bad = np.eye(3, dtype=np.complex128)
+    with pytest.raises(ValueError):
+        validate_su2_matrix(bad)

@@ -7,7 +7,7 @@ import math
 import numpy as np
 from numpy.typing import NDArray
 
-from rqm_core.linalg import normalize_vector
+from rqm_core.validation import validate_axis
 
 
 class Quaternion:
@@ -69,9 +69,7 @@ class Quaternion:
         Raises:
             ValueError: If *axis* is not ``"x"``, ``"y"``, or ``"z"``.
         """
-        axis_lower = axis.lower()
-        if axis_lower not in ("x", "y", "z"):
-            raise ValueError(f"axis must be 'x', 'y', or 'z'; got {axis!r}")
+        axis_lower = validate_axis(axis)
 
         half = angle / 2.0
         c = math.cos(half)
@@ -169,6 +167,26 @@ class Quaternion:
             ``True`` when ``| |q| - 1 | ≤ atol``.
         """
         return abs(self.norm() - 1.0) <= atol
+
+    # ------------------------------------------------------------------
+    # Accessors
+    # ------------------------------------------------------------------
+
+    def scalar_part(self) -> float:
+        """Return the scalar (real) part ``w``.
+
+        Returns:
+            Scalar component of the quaternion.
+        """
+        return self.w
+
+    def vector_part(self) -> tuple[float, float, float]:
+        """Return the vector (pure imaginary) part ``(x, y, z)``.
+
+        Returns:
+            3-tuple ``(x, y, z)`` of the pure-imaginary components.
+        """
+        return (self.x, self.y, self.z)
 
     # ------------------------------------------------------------------
     # Conversions

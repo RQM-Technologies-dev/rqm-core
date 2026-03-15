@@ -9,7 +9,7 @@ from rqm_core.su2 import (
     quaternion_to_su2,
     su2_to_quaternion,
     axis_angle_to_su2,
-    is_unitary_matrix,
+    is_unitary,
     determinant_close_to_one,
 )
 
@@ -24,7 +24,7 @@ print("\nQuaternion:", q)
 print("\nSU(2) matrix:")
 print(m)
 
-print("\nIs unitary:", is_unitary_matrix(m))
+print("\nIs unitary:", is_unitary(m))
 print("det ≈ 1:   ", determinant_close_to_one(m))
 
 # Round-trip: matrix → quaternion

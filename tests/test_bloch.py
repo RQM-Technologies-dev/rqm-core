@@ -114,3 +114,43 @@ def test_bloch_from_quaternion_x_rotation_pi():
     q = Quaternion.from_axis_angle("x", math.pi)
     v = bloch_from_quaternion(q)
     assert np.allclose(v, [0.0, 0.0, -1.0], atol=1e-9)
+
+# ---------------------------------------------------------------------------
+# bloch_radius
+# ---------------------------------------------------------------------------
+
+
+def test_bloch_radius_unit():
+    from rqm_core.bloch import bloch_radius
+    assert bloch_radius(0.0, 0.0, 1.0) == pytest.approx(1.0)
+    assert bloch_radius(1.0, 0.0, 0.0) == pytest.approx(1.0)
+
+
+def test_bloch_radius_general():
+    import math
+    from rqm_core.bloch import bloch_radius
+    x, y, z = state_to_bloch(0.6, 0.8)
+    assert bloch_radius(x, y, z) == pytest.approx(1.0)
+
+
+# ---------------------------------------------------------------------------
+# validate_bloch_vector
+# ---------------------------------------------------------------------------
+
+
+def test_validate_bloch_vector_valid():
+    from rqm_core.bloch import validate_bloch_vector
+    validate_bloch_vector(0.0, 0.0, 1.0)  # no exception
+
+
+def test_validate_bloch_vector_not_unit():
+    from rqm_core.bloch import validate_bloch_vector
+    with pytest.raises(ValueError, match="unit sphere"):
+        validate_bloch_vector(0.0, 0.0, 2.0)
+
+
+def test_validate_bloch_vector_non_finite():
+    import math
+    from rqm_core.bloch import validate_bloch_vector
+    with pytest.raises(ValueError, match="finite"):
+        validate_bloch_vector(float("inf"), 0.0, 0.0)

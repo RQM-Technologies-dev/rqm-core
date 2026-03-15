@@ -9,10 +9,23 @@ from numpy.typing import NDArray
 
 from rqm_core.quaternion import Quaternion
 from rqm_core.su2 import quaternion_to_su2
-from rqm_core.types import ComplexVector2, SU2Matrix
+from rqm_core.types import SU2Matrix
 
 
-def normalize_spinor(alpha: complex, beta: complex) -> ComplexVector2:
+def spinor_norm(alpha: complex, beta: complex) -> float:
+    """Return the Euclidean norm of the spinor ``(alpha, beta)``.
+
+    Args:
+        alpha: Amplitude of ``|0⟩``.
+        beta:  Amplitude of ``|1⟩``.
+
+    Returns:
+        Non-negative real norm ``sqrt(|alpha|² + |beta|²)``.
+    """
+    return math.sqrt(abs(alpha) ** 2 + abs(beta) ** 2)
+
+
+def normalize_spinor(alpha: complex, beta: complex) -> tuple[complex, complex]:
     """Return a normalized two-component spinor.
 
     Args:
@@ -20,15 +33,31 @@ def normalize_spinor(alpha: complex, beta: complex) -> ComplexVector2:
         beta:  Amplitude of ``|1⟩``.
 
     Returns:
-        Unit spinor ``[α/N, β/N]`` where ``N = sqrt(|α|² + |β|²)``.
+        Pair ``(alpha/N, beta/N)`` where ``N = sqrt(|alpha|² + |beta|²)``.
 
     Raises:
         ValueError: If both amplitudes are zero.
     """
-    norm = math.sqrt(abs(alpha) ** 2 + abs(beta) ** 2)
+    norm = spinor_norm(alpha, beta)
     if norm == 0.0:
         raise ValueError("Spinor must be non-zero.")
-    return np.array([alpha / norm, beta / norm], dtype=np.complex128)
+    return (alpha / norm, beta / norm)
+
+
+def is_normalized_spinor(
+    alpha: complex, beta: complex, *, atol: float = 1e-9
+) -> bool:
+    """Return ``True`` if the spinor ``(alpha, beta)`` has unit norm.
+
+    Args:
+        alpha: Amplitude of ``|0⟩``.
+        beta:  Amplitude of ``|1⟩``.
+        atol:  Absolute tolerance (default ``1e-9``).
+
+    Returns:
+        ``True`` when ``| ||(alpha, beta)|| - 1 | ≤ atol``.
+    """
+    return abs(spinor_norm(alpha, beta) - 1.0) <= atol
 
 
 def spinor_to_quaternion(alpha: complex, beta: complex) -> Quaternion:
@@ -38,6 +67,9 @@ def spinor_to_quaternion(alpha: complex, beta: complex) -> Quaternion:
     quaternion components directly from the normalized amplitudes::
 
         w = Re(α),  z = -Im(α),  y = Re(β),  x = -Im(β)
+
+    Note: global phase is not physically observable; the quaternion encodes
+    the rotation of ``|0⟩`` onto ``|ψ⟩`` up to a global phase.
 
     Args:
         alpha: Amplitude of ``|0⟩``.
@@ -49,8 +81,7 @@ def spinor_to_quaternion(alpha: complex, beta: complex) -> Quaternion:
     Raises:
         ValueError: If the spinor is zero.
     """
-    psi = normalize_spinor(alpha, beta)
-    a, b = complex(psi[0]), complex(psi[1])
+    a, b = normalize_spinor(alpha, beta)
     w = a.real
     z = -a.imag
     y = b.real
@@ -81,6 +112,8 @@ def state_fidelity(
     For pure states the fidelity is::
 
         F = |⟨ψ₁|ψ₂⟩|²
+
+    The states need not be pre-normalized; they are normalized internally.
 
     Args:
         state1: First state vector (need not be normalized).

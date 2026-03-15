@@ -18,52 +18,53 @@ def angle_wrap(angle: float) -> float:
     return (angle + math.pi) % (2.0 * math.pi) - math.pi
 
 
-def safe_norm(v: NDArray[np.floating]) -> float:
-    """Return the Euclidean norm of *v*, raising ``ValueError`` when it is zero.
+def safe_norm(values: NDArray[np.floating]) -> float:
+    """Return the Euclidean norm of *values*, raising ``ValueError`` when zero.
 
     Args:
-        v: Real-valued array.
+        values: Array or sequence of real numbers.
 
     Returns:
-        Euclidean norm of *v*.
+        Euclidean norm of *values*.
 
     Raises:
         ValueError: If the norm is zero (or numerically indistinguishable from zero).
     """
-    n = float(np.linalg.norm(v))
+    n = float(np.linalg.norm(values))
     if n == 0.0:
         raise ValueError("Cannot compute norm of a zero vector.")
     return n
 
 
-def complex_close(a: complex, b: complex, *, atol: float = 1e-9) -> bool:
-    """Return ``True`` if *a* and *b* are numerically close.
+def is_finite_real(value: float) -> bool:
+    """Return ``True`` if *value* is a finite real number.
 
     Args:
-        a: First complex number.
-        b: Second complex number.
-        atol: Absolute tolerance (default ``1e-9``).
+        value: Number to test.
 
     Returns:
-        ``True`` when ``|a - b| ≤ atol``.
+        ``True`` when *value* is finite (not NaN and not ±∞).
     """
-    return abs(a - b) <= atol
+    try:
+        return math.isfinite(float(value))
+    except (TypeError, ValueError):
+        return False
 
 
-def matrix_close(
-    a: NDArray[np.complexfloating],
-    b: NDArray[np.complexfloating],
-    *,
-    atol: float = 1e-9,
-) -> bool:
-    """Return ``True`` if matrices *a* and *b* are element-wise close.
+def is_finite_complex(value: complex) -> bool:
+    """Return ``True`` if *value* is a finite complex number.
+
+    Both the real and imaginary parts must be finite.
 
     Args:
-        a: First matrix.
-        b: Second matrix.
-        atol: Absolute tolerance (default ``1e-9``).
+        value: Complex number to test.
 
     Returns:
-        ``True`` when every element satisfies ``|a_ij - b_ij| ≤ atol``.
+        ``True`` when both ``Re(value)`` and ``Im(value)`` are finite.
     """
-    return bool(np.allclose(a, b, atol=atol, rtol=0.0))
+    try:
+        v = complex(value)
+        return math.isfinite(v.real) and math.isfinite(v.imag)
+    except (TypeError, ValueError):
+        return False
+

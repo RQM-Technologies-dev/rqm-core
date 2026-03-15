@@ -1,69 +1,53 @@
 # RQM Core
 
-> Foundational mathematics library for the RQM Python ecosystem.
-
-`rqm-core` provides canonical, well-tested implementations of:
-
-- **Quaternion algebra** – Hamilton product, conjugation, norm, inverse, axis-angle construction
-- **SU(2) mappings** – bijection between unit quaternions and 2 × 2 special-unitary matrices
-- **Bloch sphere geometry** – conversion between quantum spinors and Bloch vectors
-- **Spinor utilities** – normalization, fidelity, and spinor↔quaternion/SU(2) conversions
-- **Shared numerical utilities** – `numpy`-backed linear algebra helpers and tolerance functions
-
-This package intentionally has **no dependency on Qiskit or any quantum framework**; it is the
-stable mathematical foundation that higher RQM packages (e.g. `rqm-qiskit`) build upon.
+> Core quaternion, spinor, SU(2), and Bloch mathematics for the RQM Python ecosystem.
 
 ---
 
-## Overview
+## Why This Package Exists
 
-### Quaternion representation of rotations
+Higher-level RQM libraries (simulators, compilers, hardware adapters) all require a
+common, reliable layer of linear algebra and quantum geometry.  `rqm-core` is that layer.
 
-A unit quaternion `q = w + x·i + y·j + z·k` with `|q| = 1` encodes a rotation in SO(3).
-It is the most numerically stable way to compose and interpolate rotations, avoiding the
-gimbal-lock problem of Euler angles and the redundancy of rotation matrices.
+It provides a single, versioned source of truth for the mathematical primitives shared
+across the whole ecosystem: no duplication, no conflicting conventions, and no framework lock-in.
 
-The axis-angle formula used throughout `rqm-core` is:
+---
 
-```
-q = cos(θ/2) + u · sin(θ/2)
-```
+## Design Principles
 
-where `u` is the unit vector along the rotation axis and `θ` is the rotation angle.
+| Principle | What it means in practice |
+|---|---|
+| **Tiny** | Only implement primitives that are needed by ≥2 packages |
+| **Stable** | Slow to change; breaking changes require a major version bump |
+| **Dependency-light** | Only `numpy` at runtime |
+| **Canonical** | One correct convention, clearly documented, used everywhere |
+| **Well-tested** | Strong test coverage from the first commit |
 
-### Relationship between SU(2) and quaternions
+---
 
-There is a two-to-one Lie group homomorphism `SU(2) → SO(3)`.  Every unit quaternion maps to
-a unique 2 × 2 special unitary matrix via:
+## What Is Included
 
-```
-q ↦  [[ w − i·z ,  −(y + i·x) ],
-      [ y − i·x ,   w + i·z  ]]
-```
+- **Quaternion primitives** – Hamilton product, conjugate, inverse, axis-angle construction, SO(3) and SU(2) conversions
+- **Spinor helpers** – normalization, norm, fidelity, spinor↔quaternion/SU(2) mappings
+- **SU(2) conversions** – construction from quaternions and axis-angle, validation, round-trips
+- **Bloch sphere mappings** – state↔Bloch, Bloch↔state, quaternion rotation to Bloch vector
+- **Matrix helpers** – trace, determinant, conjugate transpose (dagger), norm, closeness checks
+- **Validation utilities** – axis, complex pair, matrix shape, real number, tolerance checks
 
-The quaternion and its negative represent the same physical rotation but correspond to
-distinct SU(2) elements (a global phase).
+---
 
-### Bloch sphere geometry
+## What Is Intentionally *Not* Included
 
-A qubit state `|ψ⟩ = α|0⟩ + β|1⟩` corresponds to a point on the unit sphere in ℝ³:
+- Qiskit / PennyLane / Cirq adapters
+- Backend execution or hardware drivers
+- Circuit transpilation or compilation
+- Plotting or visualisation
+- Cloud workflow integration
+- Notebook tooling
+- Algorithm frameworks or optimisation workflows
 
-```
-x = 2 Re(α̅ · β)
-y = 2 Im(α̅ · β)
-z = |α|² − |β|²
-```
-
-The standard poles are `|0⟩ → (0, 0, 1)` and `|1⟩ → (0, 0, −1)`.
-
-### Supporting higher RQM packages
-
-`rqm-core` exports stable, versioned APIs.  Dependent packages import directly:
-
-```python
-from rqm_core.quaternion import Quaternion
-from rqm_core.su2 import quaternion_to_su2
-```
+Those belong in higher-level packages.
 
 ---
 
@@ -73,7 +57,7 @@ from rqm_core.su2 import quaternion_to_su2
 pip install rqm-core
 ```
 
-For development (includes `pytest` and `pytest-cov`):
+Development install (includes `pytest` and `pytest-cov`):
 
 ```bash
 pip install "rqm-core[dev]"
@@ -85,26 +69,21 @@ pip install "rqm-core[dev]"
 
 ```python
 from rqm_core.quaternion import Quaternion
-
-# Build a 90° rotation around Y
-q = Quaternion.from_axis_angle("y", 1.5707963267948966)
-print(q)
-# → Quaternion(0.7071..., 0.0, 0.7071..., 0.0)
-
-# Get the equivalent SU(2) matrix
-print(q.to_su2_matrix())
-
-# Compose rotations
-q2 = Quaternion.from_axis_angle("z", 1.2)
-q_combined = q * q2
-```
-
-```python
 from rqm_core.bloch import state_to_bloch
 import math
 
+# 90° rotation around Y
+q = Quaternion.from_axis_angle("y", math.pi / 2)
+print(q)
+# Quaternion(0.7071..., 0.0, 0.7071..., 0.0)
+
+# SU(2) matrix
+print(q.to_su2_matrix())
+
+# |+⟩ state on the Bloch sphere → equator at (1, 0, 0)
 c = 1 / math.sqrt(2)
-print(state_to_bloch(c, c))   # |+⟩ → [1. 0. 0.]
+x, y, z = state_to_bloch(c, c)
+print(x, y, z)  # 1.0  0.0  0.0
 ```
 
 ---
@@ -113,31 +92,35 @@ print(state_to_bloch(c, c))   # |+⟩ → [1. 0. 0.]
 
 ```
 src/rqm_core/
-  __init__.py     – public API surface
-  quaternion.py   – Quaternion class
-  su2.py          – SU(2) construction and validation
-  bloch.py        – Bloch sphere conversions
-  spinor.py       – Spinor utilities and fidelity
-  linalg.py       – Low-level numpy linear algebra helpers
-  types.py        – Shared type aliases (ComplexVector2, BlochVector, SU2Matrix)
-  utils.py        – Tolerance and wrapping utilities
+  __init__.py      – canonical public API
+  quaternion.py    – Quaternion class (Hamilton algebra, SO(3)/SU(2) conversions)
+  spinor.py        – spinor normalization, fidelity, spinor↔quaternion/SU(2)
+  su2.py           – SU(2) construction, validation, quaternion round-trips
+  bloch.py         – Bloch sphere mappings and validation
+  linalg.py        – matrix helpers (dagger, trace, determinant, closeness)
+  validation.py    – shared validation helpers (axis, matrix shape, tolerances)
+  types.py         – shared type aliases (ComplexVector2, BlochVector, SU2Matrix, …)
+  utils.py         – small math utilities (angle_wrap, safe_norm, is_finite_*)
 
 tests/
   test_quaternion.py
+  test_spinor.py
   test_su2.py
   test_bloch.py
-  test_spinor.py
+  test_linalg.py
+  test_utils.py
+  test_validation.py
+  test_public_api.py
 
 examples/
-  quaternion_basics.py
-  su2_rotation_demo.py
-  bloch_mapping_demo.py
-  README.md
+  quaternion_basics.py   – quaternion construction, composition, conversion
+  spinor_basics.py       – spinor normalization, Bloch mapping, fidelity
+  su2_bloch_demo.py      – axis-angle → SU(2) → Bloch pipeline
 ```
 
 ---
 
-## Running Tests
+## Testing
 
 ```bash
 pip install ".[dev]"
@@ -148,9 +131,15 @@ pytest --cov=rqm_core --cov-report=term-missing
 
 ## Roadmap
 
+`rqm-core` is intended to remain **small and stable** while higher-level packages evolve around it.
+
+Planned additions for future minor versions:
+
 - [ ] Quaternion SLERP (spherical linear interpolation)
-- [ ] Full SO(3) rotation-matrix ↔ quaternion round-trip
+- [ ] SO(3) rotation-matrix ↔ quaternion round-trip helpers
 - [ ] Mixed-state density matrix utilities
-- [ ] SU(2) Lie-algebra (generators and exponential map)
-- [ ] Type-stub files (`.pyi`) for IDE support
+- [ ] SU(2) Lie-algebra generators and exponential map
+- [ ] Type stub files (`.pyi`) for IDE completions
+
+No Qiskit or framework dependencies will ever be added to this package.
 

@@ -1,6 +1,6 @@
 # Examples
 
-This directory contains runnable example scripts that demonstrate the core features of `rqm_core`.
+This directory contains runnable example scripts demonstrating the core features of `rqm_core`.
 
 ## Running the Examples
 
@@ -14,14 +14,14 @@ Then run any example directly:
 
 ```bash
 python examples/quaternion_basics.py
-python examples/su2_rotation_demo.py
-python examples/bloch_mapping_demo.py
+python examples/spinor_basics.py
+python examples/su2_bloch_demo.py
 ```
 
 ## Contents
 
 | Script | Description |
 |---|---|
-| `quaternion_basics.py` | Construct quaternions, multiply rotations, convert to matrices |
-| `su2_rotation_demo.py` | Compare quaternion rotation with the equivalent SU(2) matrix |
-| `bloch_mapping_demo.py` | Map spinors to Bloch sphere vectors and compute state fidelity |
+| `quaternion_basics.py` | Construct quaternions, compose rotations, convert to SU(2) and SO(3) matrices |
+| `spinor_basics.py` | Normalize spinors, map to Bloch vectors, compute state fidelity |
+| `su2_bloch_demo.py` | Full pipeline: axis-angle → quaternion → SU(2) → Bloch vector |

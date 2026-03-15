@@ -197,3 +197,28 @@ def test_eq_different():
 
 def test_eq_not_quaternion():
     assert Quaternion(1.0, 0.0, 0.0, 0.0).__eq__("string") is NotImplemented
+
+
+# ---------------------------------------------------------------------------
+# scalar_part and vector_part
+# ---------------------------------------------------------------------------
+
+
+def test_scalar_part():
+    q = Quaternion(1.0, 2.0, 3.0, 4.0)
+    assert q.scalar_part() == 1.0
+
+
+def test_vector_part():
+    q = Quaternion(1.0, 2.0, 3.0, 4.0)
+    assert q.vector_part() == (2.0, 3.0, 4.0)
+
+
+def test_scalar_part_identity():
+    q = Quaternion.identity()
+    assert q.scalar_part() == 1.0
+
+
+def test_vector_part_identity():
+    q = Quaternion.identity()
+    assert q.vector_part() == (0.0, 0.0, 0.0)

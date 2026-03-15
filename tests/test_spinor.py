@@ -7,6 +7,8 @@ import pytest
 
 from rqm_core.spinor import (
     normalize_spinor,
+    spinor_norm,
+    is_normalized_spinor,
     spinor_to_quaternion,
     spinor_to_su2,
     state_fidelity,
@@ -62,9 +64,9 @@ def test_spinor_to_quaternion_unit():
 
 
 def test_spinor_to_su2_unitary():
-    from rqm_core.su2 import is_unitary_matrix
+    from rqm_core.su2 import is_unitary
     m = spinor_to_su2(1.0 / math.sqrt(2), 1.0 / math.sqrt(2))
-    assert is_unitary_matrix(m)
+    assert is_unitary(m)
 
 
 def test_spinor_to_su2_det_one():
@@ -114,3 +116,39 @@ def test_fidelity_zero_state_raises():
     psi = np.array([1.0, 0.0], dtype=np.complex128)
     with pytest.raises(ValueError, match="non-zero"):
         state_fidelity(zero, psi)
+
+
+# ---------------------------------------------------------------------------
+# spinor_norm
+# ---------------------------------------------------------------------------
+
+
+def test_spinor_norm_real():
+    assert spinor_norm(3.0, 4.0) == pytest.approx(5.0)
+
+
+def test_spinor_norm_zero():
+    assert spinor_norm(0.0, 0.0) == pytest.approx(0.0, abs=1e-9)
+
+
+def test_spinor_norm_unit():
+    assert spinor_norm(1.0, 0.0) == pytest.approx(1.0)
+
+
+# ---------------------------------------------------------------------------
+# is_normalized_spinor
+# ---------------------------------------------------------------------------
+
+
+def test_is_normalized_true():
+    assert is_normalized_spinor(1.0, 0.0)
+
+
+def test_is_normalized_false():
+    assert not is_normalized_spinor(3.0, 4.0)
+
+
+def test_is_normalized_complex():
+    import math
+    c = 1.0 / math.sqrt(2)
+    assert is_normalized_spinor(c, 1j * c)

@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import math
-
 import numpy as np
 from numpy.typing import NDArray
 
 from rqm_core.quaternion import Quaternion
-from rqm_core.linalg import is_unitary, matrix_determinant
+from rqm_core.linalg import is_unitary as _is_unitary, matrix_determinant
+from rqm_core.validation import validate_axis, validate_square_matrix
 
 
 def quaternion_to_su2(q: Quaternion) -> NDArray[np.complex128]:
@@ -45,7 +44,7 @@ def su2_to_quaternion(matrix: NDArray[np.complex128]) -> Quaternion:
         ValueError: If *matrix* is not unitary.
     """
     m = np.asarray(matrix, dtype=np.complex128)
-    if not is_unitary(m):
+    if not _is_unitary(m):
         raise ValueError("Matrix is not unitary; cannot convert to quaternion.")
 
     # top-left element is (w - i·z), bottom-right is (w + i·z)
@@ -74,7 +73,6 @@ def axis_angle_to_su2(axis: str, angle: float) -> NDArray[np.complex128]:
     """
     return Quaternion.from_axis_angle(axis, angle).to_su2_matrix()
 
-
 def su2_identity() -> NDArray[np.complex128]:
     """Return the 2×2 identity matrix (SU(2) identity element).
 
@@ -89,7 +87,7 @@ def su2_identity() -> NDArray[np.complex128]:
 # ------------------------------------------------------------------
 
 
-def is_unitary_matrix(matrix: NDArray[np.complex128], *, atol: float = 1e-9) -> bool:
+def is_unitary(matrix: NDArray[np.complex128], *, atol: float = 1e-9) -> bool:
     """Return ``True`` if *matrix* is unitary (``M† M ≈ I``).
 
     Args:
@@ -99,7 +97,7 @@ def is_unitary_matrix(matrix: NDArray[np.complex128], *, atol: float = 1e-9) -> 
     Returns:
         ``True`` when *matrix* is unitary within *atol*.
     """
-    return is_unitary(np.asarray(matrix, dtype=np.complex128), atol=atol)
+    return _is_unitary(np.asarray(matrix, dtype=np.complex128), atol=atol)
 
 
 def determinant_close_to_one(
@@ -116,3 +114,31 @@ def determinant_close_to_one(
     """
     det = matrix_determinant(np.asarray(matrix, dtype=np.complex128))
     return abs(det - 1.0) <= atol
+
+
+def validate_su2_matrix(
+    matrix: NDArray[np.complex128], *, atol: float = 1e-9
+) -> None:
+    """Validate that *matrix* is a proper SU(2) matrix.
+
+    Checks that the matrix is 2×2, unitary (``M† M ≈ I``), and has
+    determinant close to 1.
+
+    Args:
+        matrix: Matrix to validate.
+        atol: Absolute tolerance (default ``1e-9``).
+
+    Raises:
+        ValueError: If the matrix fails any SU(2) check.
+    """
+    validate_square_matrix(matrix, expected_size=2)
+    m = np.asarray(matrix, dtype=np.complex128)
+    if not _is_unitary(m, atol=atol):
+        raise ValueError(
+            "Matrix is not unitary (M† M ≠ I); not a valid SU(2) matrix."
+        )
+    det = matrix_determinant(m)
+    if abs(det - 1.0) > atol:
+        raise ValueError(
+            f"Matrix determinant is {det:.6g}, expected 1; not a valid SU(2) matrix."
+        )
