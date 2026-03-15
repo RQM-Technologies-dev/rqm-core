@@ -32,7 +32,7 @@ def su2_to_quaternion(matrix: NDArray[np.complex128]) -> Quaternion:
         [[ α , -β* ],
          [ β ,  α* ]]
 
-    where ``α = w + i·z`` (top-right sign convention from ``to_su2_matrix``).
+    where ``α = w - i·z`` (matching the convention in :meth:`Quaternion.to_su2_matrix`).
 
     Args:
         matrix: 2×2 complex SU(2) matrix.
@@ -72,6 +72,7 @@ def axis_angle_to_su2(axis: str, angle: float) -> NDArray[np.complex128]:
         2×2 SU(2) rotation matrix.
     """
     return Quaternion.from_axis_angle(axis, angle).to_su2_matrix()
+
 
 def su2_identity() -> NDArray[np.complex128]:
     """Return the 2×2 identity matrix (SU(2) identity element).

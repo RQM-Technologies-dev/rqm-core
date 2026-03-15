@@ -113,9 +113,11 @@ tests/
   test_public_api.py
 
 examples/
-  quaternion_basics.py   – quaternion construction, composition, conversion
-  spinor_basics.py       – spinor normalization, Bloch mapping, fidelity
-  su2_bloch_demo.py      – axis-angle → SU(2) → Bloch pipeline
+  quaternion_basics.py    – quaternion construction, composition, conversion
+  spinor_basics.py        – spinor normalization, Bloch mapping, fidelity
+  su2_bloch_demo.py       – axis-angle → SU(2) → Bloch pipeline
+  bloch_mapping_demo.py   – canonical Bloch vectors and round-trip checks
+  su2_rotation_demo.py    – SU(2) construction and quaternion round-trip
 ```
 
 ---

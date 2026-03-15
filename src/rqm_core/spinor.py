@@ -86,7 +86,7 @@ def spinor_to_quaternion(alpha: complex, beta: complex) -> Quaternion:
     z = -a.imag
     y = b.real
     x = -b.imag
-    return Quaternion(w, x, y, z).normalize()
+    return Quaternion(w, x, y, z)
 
 
 def spinor_to_su2(alpha: complex, beta: complex) -> SU2Matrix:

@@ -127,6 +127,64 @@ def test_inverse_zero_raises():
 
 
 # ---------------------------------------------------------------------------
+# Conjugate
+# ---------------------------------------------------------------------------
+
+
+def test_conjugate_negate_vector_part():
+    q = Quaternion(1.0, 2.0, 3.0, 4.0)
+    c = q.conjugate()
+    assert c.w == pytest.approx(1.0)
+    assert c.x == pytest.approx(-2.0)
+    assert c.y == pytest.approx(-3.0)
+    assert c.z == pytest.approx(-4.0)
+
+
+def test_conjugate_of_identity():
+    assert Quaternion.identity().conjugate() == Quaternion.identity()
+
+
+def test_conjugate_times_self_is_norm_squared():
+    """q * q.conjugate() should be purely scalar with value |q|²."""
+    q = Quaternion(1.0, 2.0, 3.0, 4.0)
+    product = q * q.conjugate()
+    expected_w = q.norm() ** 2
+    assert product.w == pytest.approx(expected_w)
+    assert product.x == pytest.approx(0.0, abs=1e-9)
+    assert product.y == pytest.approx(0.0, abs=1e-9)
+    assert product.z == pytest.approx(0.0, abs=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# is_close
+# ---------------------------------------------------------------------------
+
+
+def test_is_close_identical():
+    q = Quaternion(1.0, 2.0, 3.0, 4.0)
+    assert q.is_close(q)
+
+
+def test_is_close_within_default_atol():
+    q1 = Quaternion(1.0, 0.0, 0.0, 0.0)
+    q2 = Quaternion(1.0 + 1e-10, 0.0, 0.0, 0.0)
+    assert q1.is_close(q2)
+
+
+def test_is_close_outside_default_atol():
+    q1 = Quaternion(1.0, 0.0, 0.0, 0.0)
+    q2 = Quaternion(1.1, 0.0, 0.0, 0.0)
+    assert not q1.is_close(q2)
+
+
+def test_is_close_custom_atol():
+    q1 = Quaternion(1.0, 0.0, 0.0, 0.0)
+    q2 = Quaternion(1.05, 0.0, 0.0, 0.0)
+    assert q1.is_close(q2, atol=0.1)
+    assert not q1.is_close(q2, atol=0.01)
+
+
+# ---------------------------------------------------------------------------
 # SU(2) matrix conversion
 # ---------------------------------------------------------------------------
 

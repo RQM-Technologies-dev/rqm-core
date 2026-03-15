@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
+import cmath
 import math
-
-import numpy as np
-from numpy.typing import NDArray
 
 from rqm_core.quaternion import Quaternion
 
@@ -59,7 +57,7 @@ def bloch_to_state(theta: float, phi: float) -> tuple[complex, complex]:
         Normalized spinor ``(alpha, beta)`` as a 2-tuple of complex numbers.
     """
     alpha = complex(math.cos(theta / 2.0))
-    beta = complex(np.exp(1j * phi)) * math.sin(theta / 2.0)
+    beta = cmath.exp(1j * phi) * math.sin(theta / 2.0)
     return (alpha, beta)
 
 
@@ -77,9 +75,7 @@ def bloch_from_quaternion(q: Quaternion) -> tuple[float, float, float]:
         Bloch vector ``(x, y, z)`` as a 3-tuple of floats.
     """
     r = q.normalize().to_rotation_matrix()
-    north_pole = np.array([0.0, 0.0, 1.0], dtype=np.float64)
-    result = r @ north_pole
-    return (float(result[0]), float(result[1]), float(result[2]))
+    return (float(r[0, 2]), float(r[1, 2]), float(r[2, 2]))
 
 
 def bloch_radius(x: float, y: float, z: float) -> float:

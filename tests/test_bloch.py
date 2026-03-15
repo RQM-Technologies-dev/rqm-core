@@ -98,6 +98,15 @@ def test_bloch_to_state_roundtrip():
     assert np.allclose(v, expected, atol=1e-9)
 
 
+def test_bloch_to_state_normalized():
+    """bloch_to_state must always return a unit-norm spinor."""
+    import math as _math
+    for theta, phi in [(0.0, 0.0), (_math.pi / 3, 1.2), (_math.pi, 2.5)]:
+        psi = bloch_to_state(theta, phi)
+        norm_sq = abs(psi[0]) ** 2 + abs(psi[1]) ** 2
+        assert norm_sq == pytest.approx(1.0)
+
+
 # ---------------------------------------------------------------------------
 # bloch_from_quaternion
 # ---------------------------------------------------------------------------
