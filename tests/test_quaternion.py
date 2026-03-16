@@ -207,10 +207,10 @@ def test_to_su2_determinant_one():
 
 
 def test_to_su2_unitarity():
+    from rqm_core.su2 import is_unitary
     q = Quaternion.from_axis_angle("z", 0.9)
     m = q.to_su2_matrix()
-    product = m.conj().T @ m
-    assert np.allclose(product, np.eye(2), atol=1e-9)
+    assert is_unitary(m)
 
 
 # ---------------------------------------------------------------------------
