@@ -32,7 +32,7 @@ def su2_to_quaternion(matrix: NDArray[np.complex128]) -> Quaternion:
         [[ α , -β* ],
          [ β ,  α* ]]
 
-    where ``α = w + i·z`` (top-right sign convention from ``to_su2_matrix``).
+    where ``α = w - i·z`` (matching the convention in :meth:`Quaternion.to_su2_matrix`).
 
     Args:
         matrix: 2×2 complex SU(2) matrix.
@@ -73,6 +73,7 @@ def axis_angle_to_su2(axis: str, angle: float) -> NDArray[np.complex128]:
     """
     return Quaternion.from_axis_angle(axis, angle).to_su2_matrix()
 
+
 def su2_identity() -> NDArray[np.complex128]:
     """Return the 2×2 identity matrix (SU(2) identity element).
 
@@ -89,6 +90,10 @@ def su2_identity() -> NDArray[np.complex128]:
 
 def is_unitary(matrix: NDArray[np.complex128], *, atol: float = 1e-9) -> bool:
     """Return ``True`` if *matrix* is unitary (``M† M ≈ I``).
+
+    This is a convenience re-export of :func:`rqm_core.linalg.is_unitary`
+    scoped to the SU(2) domain.  All SU(2) matrices constructed by this
+    module satisfy this property.
 
     Args:
         matrix: Square complex matrix to test.

@@ -136,3 +136,11 @@ def test_validate_su2_matrix_wrong_shape():
     bad = np.eye(3, dtype=np.complex128)
     with pytest.raises(ValueError):
         validate_su2_matrix(bad)
+
+
+def test_validate_su2_matrix_det_not_one():
+    from rqm_core.su2 import validate_su2_matrix
+    # Unitary but det = -1 (SU(2) requires det = +1)
+    bad = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
+    with pytest.raises(ValueError, match="determinant"):
+        validate_su2_matrix(bad)
