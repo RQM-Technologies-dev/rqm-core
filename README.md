@@ -37,6 +37,50 @@ across the whole ecosystem: no duplication, no conflicting conventions, and no f
 
 ---
 
+## Mathematical Conventions
+
+The full reference lives in [`CONVENTIONS.md`](CONVENTIONS.md).
+The five items every downstream package needs to know:
+
+### 1 · SU(2) Convention
+
+A unit quaternion `q = w + xi + yj + zk` maps to SU(2) as:
+
+```
+U(q) = [[ w − iz ,  −y − ix ],
+         [ y − ix ,   w + iz ]]
+```
+
+Implemented in `Quaternion.to_su2_matrix()`; inverted by `su2_to_quaternion()`.
+
+### 2 · Spinor Convention
+
+States are written `|ψ⟩ = α|0⟩ + β|1⟩` with `|0⟩` as the north-pole
+computational-basis ground state.  Amplitudes are always passed as the ordered
+pair `(alpha, beta)`.  Functions that require unit norm normalize internally.
+
+### 3 · Bloch Sphere Parameterization
+
+```
+|ψ⟩ = cos(θ/2)|0⟩ + e^{iφ} sin(θ/2)|1⟩
+```
+
+`theta` ∈ `[0, π]` (polar/colatitude), `phi` ∈ `[0, 2π)` (azimuthal).
+`|0⟩` → north pole `(0, 0, +1)`;  `|1⟩` → south pole `(0, 0, −1)`.
+
+### 4 · Global Phase
+
+`q` and `−q` represent the same rotation.  `spinor_to_quaternion` encodes
+the rotation up to global phase — never rely on the sign of the scalar part.
+
+### 5 · Default Tolerance and Axis Labels
+
+All closeness checks default to `atol = 1e-9` (absolute, no relative
+component).  Axis labels are `"x"`, `"y"`, `"z"` (case-insensitive);
+all angles are in **radians**.
+
+---
+
 ## What Is Intentionally *Not* Included
 
 - Qiskit / PennyLane / Cirq adapters
