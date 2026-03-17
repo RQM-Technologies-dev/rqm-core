@@ -2,6 +2,49 @@
 
 > Core quaternion, spinor, SU(2), and Bloch mathematics for the RQM Python ecosystem.
 
+[![PyPI version](https://img.shields.io/pypi/v/rqm-core.svg)](https://pypi.org/project/rqm-core/)
+[![Python versions](https://img.shields.io/pypi/pyversions/rqm-core.svg)](https://pypi.org/project/rqm-core/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-rqmtechnologies.com-blue.svg)](https://docs.rqmtechnologies.com)
+[![Website](https://img.shields.io/badge/website-rqmtechnologies.com-blue.svg)](https://rqmtechnologies.com)
+
+---
+
+## 🌐 RQM Platform
+
+This repository is part of the RQM Technologies ecosystem.
+
+→ Website: https://rqmtechnologies.com  
+→ Documentation: https://docs.rqmtechnologies.com
+
+---
+
+## Install
+
+```bash
+pip install rqm-core
+```
+
+`rqm-core` is the mathematical foundation layer. It has no RQM-level dependencies — only `numpy` at runtime.
+
+---
+
+## Where This Fits
+
+```
+rqm-core  →  rqm-compiler  →  rqm-qiskit / rqm-braket
+```
+
+`rqm-core` provides the canonical mathematical layer of the RQM ecosystem, including quaternion, spinor, Bloch, and SU(2) foundations. Higher-level packages (`rqm-compiler`, `rqm-qiskit`, `rqm-braket`) build on top of it.
+
+---
+
+## Next Steps
+
+- Documentation: https://docs.rqmtechnologies.com
+- Website: https://rqmtechnologies.com
+- Next package in the stack: [`rqm-compiler`](https://github.com/RQM-Technologies-dev/rqm-compiler)
+
 ---
 
 ## Why This Package Exists
