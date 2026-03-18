@@ -39,8 +39,10 @@ classifiers = [
 dev = ["pytest>=7.0", "pytest-cov>=4.0"]
 
 [project.urls]
-"Source Code" = "https://github.com/RQM-Technologies-dev/rqm-core"
-"Bug Tracker" = "https://github.com/RQM-Technologies-dev/rqm-core/issues"
+"Homepage" = "https://rqmtechnologies.com"
+"Documentation" = "https://docs.rqmtechnologies.com"
+"Source" = "https://github.com/RQM-Technologies-dev/rqm-core"
+"Issues" = "https://github.com/RQM-Technologies-dev/rqm-core/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
