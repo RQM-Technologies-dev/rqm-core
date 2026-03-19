@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from typing import Sequence
 
 import numpy as np
 from numpy.typing import NDArray
@@ -80,6 +81,54 @@ class Quaternion:
         if axis_lower == "y":
             return cls(c, 0.0, s, 0.0)
         return cls(c, 0.0, 0.0, s)
+
+    @classmethod
+    def from_axis_angle_vec(
+        cls,
+        axis: Sequence[float],
+        angle: float,
+    ) -> "Quaternion":
+        """Construct a unit quaternion from an arbitrary rotation axis and angle.
+
+        The axis-angle formula is::
+
+            q = cos(θ/2) + u·sin(θ/2)
+
+        where ``u = (ux, uy, uz)`` is the *unit* version of *axis*.
+
+        This generalises :meth:`from_axis_angle` to rotations about any
+        direction, not only the cardinal axes.  The axes ``i``, ``j``, ``k``
+        correspond to the x-, y-, z-directions respectively, matching the
+        Pauli-gate mapping ``i↔X``, ``j↔Y``, ``k↔Z``.
+
+        Args:
+            axis: A non-zero 3-element sequence ``(ux, uy, uz)`` giving the
+                rotation axis.  It need not be pre-normalised.
+            angle: Rotation angle *θ* in radians.  The quaternion half-angle
+                parameter is ``φ = θ/2``, so the physical Bloch-sphere
+                rotation is ``2φ = θ``.
+
+        Returns:
+            Unit quaternion ``cos(θ/2) + (ux·i + uy·j + uz·k)·sin(θ/2)``.
+
+        Raises:
+            ValueError: If *axis* is the zero vector or has a length other
+                than 3.
+        """
+        ax = list(axis)
+        if len(ax) != 3:
+            raise ValueError(
+                f"axis must be a 3-element sequence; got length {len(ax)}"
+            )
+        ux, uy, uz = float(ax[0]), float(ax[1]), float(ax[2])
+        norm = math.sqrt(ux * ux + uy * uy + uz * uz)
+        if norm == 0.0:
+            raise ValueError("axis must be a non-zero vector.")
+        ux, uy, uz = ux / norm, uy / norm, uz / norm
+        half = angle / 2.0
+        c = math.cos(half)
+        s = math.sin(half)
+        return cls(c, ux * s, uy * s, uz * s)
 
     # ------------------------------------------------------------------
     # Arithmetic
@@ -167,6 +216,101 @@ class Quaternion:
             ``True`` when ``| |q| - 1 | ≤ atol``.
         """
         return abs(self.norm() - 1.0) <= atol
+
+    def canonicalize(self) -> "Quaternion":
+        """Return the canonical representative with non-negative scalar part.
+
+        Both ``q`` and ``-q`` describe the same physical rotation in SO(3).
+        For compiler canonicalization the convention ``w ≥ 0`` is chosen so
+        that each rotation has a unique shortest-geodesic representative on
+        the unit 3-sphere S³.  This keeps the half-angle ``φ ∈ [0, π/2]``
+        when possible, gives more stable numerical behaviour, and produces
+        consistent output for fused gate sequences.
+
+        Returns:
+            ``self.normalize()`` if its scalar part is non-negative,
+            otherwise ``-self.normalize()``.
+        """
+        q = self.normalize()
+        if q.w < 0.0:
+            return Quaternion(-q.w, -q.x, -q.y, -q.z)
+        return q
+
+    def to_axis_angle(
+        self, *, atol: float = 1e-9
+    ) -> tuple[tuple[float, float, float], float]:
+        """Extract the rotation axis and angle from this unit quaternion.
+
+        Given ``q = w + x·i + y·j + z·k`` with ``|q| = 1``, the physical
+        rotation angle is::
+
+            θ = 2·arccos(w)
+
+        and the rotation axis is::
+
+            û = (x, y, z) / sin(θ/2)     if sin(θ/2) > atol
+
+        For rotations close to the identity (``θ ≈ 0``) the axis is
+        undefined; the x-axis is returned as a conventional default.
+
+        The quaternion is normalized internally before extraction.
+
+        Args:
+            atol: Threshold below which ``sin(θ/2)`` is considered zero
+                (default ``1e-9``).
+
+        Returns:
+            2-tuple ``(axis, angle)`` where *axis* is a unit 3-tuple
+            ``(ux, uy, uz)`` and *angle* is in radians ``[0, 2π)``.
+        """
+        q = self.normalize()
+        # Clamp w to [-1, 1] to guard against tiny floating-point errors.
+        w_clamped = max(-1.0, min(1.0, q.w))
+        half_angle = math.acos(w_clamped)
+        angle = 2.0 * half_angle
+        s = math.sin(half_angle)
+        if s > atol:
+            axis: tuple[float, float, float] = (q.x / s, q.y / s, q.z / s)
+        else:
+            # Identity or 2π rotation – axis is arbitrary; use x by convention.
+            axis = (1.0, 0.0, 0.0)
+        return axis, angle
+
+    def rotate_vector(
+        self, v: Sequence[float]
+    ) -> tuple[float, float, float]:
+        """Rotate a 3-D vector by this quaternion via the sandwich product.
+
+        Implements::
+
+            p' = q · p · q⁻¹
+
+        where ``p = 0 + vx·i + vy·j + vz·k`` is the pure-quaternion
+        representation of *v*.  For a unit quaternion ``q⁻¹ = q*``
+        (the conjugate).
+
+        This is the standard way to rotate a Bloch vector or any 3-D vector
+        by the rotation encoded in *q*.
+
+        Args:
+            v: A 3-element sequence ``(vx, vy, vz)``.
+
+        Returns:
+            Rotated vector as a 3-tuple ``(vx', vy', vz')``.
+
+        Raises:
+            ValueError: If *v* does not have exactly 3 elements.
+        """
+        vec = list(v)
+        if len(vec) != 3:
+            raise ValueError(
+                f"v must be a 3-element sequence; got length {len(vec)}"
+            )
+        vx, vy, vz = float(vec[0]), float(vec[1]), float(vec[2])
+        p = Quaternion(0.0, vx, vy, vz)
+        q = self.normalize()
+        rotated = q * p * q.conjugate()
+        return (rotated.x, rotated.y, rotated.z)
 
     # ------------------------------------------------------------------
     # Accessors

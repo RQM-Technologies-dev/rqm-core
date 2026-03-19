@@ -124,3 +124,40 @@ def validate_bloch_vector(
             f"Bloch vector must lie on the unit sphere (radius 1); got radius {r:.6g}"
         )
 
+
+def measurement_probabilities(
+    x: float, y: float, z: float
+) -> tuple[float, float]:
+    """Return the Z-basis measurement probabilities for a pure-state Bloch vector.
+
+    For a pure state with Bloch vector ``(x, y, z)`` the probabilities of
+    measuring ``|0⟩`` and ``|1⟩`` in the computational (Z) basis are::
+
+        P(0) = (1 + z) / 2
+        P(1) = (1 - z) / 2
+
+    This is the direct bridge from the quaternion-derived Bloch vector to
+    standard quantum measurement outputs (cf. RQM quaternion theory §17).
+
+    Args:
+        x: x-component of the Bloch vector (not used for Z-basis measurement).
+        y: y-component of the Bloch vector (not used for Z-basis measurement).
+        z: z-component of the Bloch vector; must satisfy ``|z| ≤ 1``.
+
+    Returns:
+        2-tuple ``(p0, p1)`` where ``p0 = P(|0⟩)`` and ``p1 = P(|1⟩)``.
+        Both values are in ``[0, 1]`` and sum to 1.
+
+    Raises:
+        ValueError: If *z* is not in the range ``[-1, 1]``.
+    """
+    z_f = float(z)
+    if not math.isfinite(z_f) or abs(z_f) > 1.0 + 1e-9:
+        raise ValueError(
+            f"Bloch vector z-component must be in [-1, 1]; got {z_f!r}"
+        )
+    z_clamped = max(-1.0, min(1.0, z_f))
+    p0 = (1.0 + z_clamped) / 2.0
+    p1 = (1.0 - z_clamped) / 2.0
+    return (p0, p1)
+

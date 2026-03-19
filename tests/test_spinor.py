@@ -152,3 +152,64 @@ def test_is_normalized_complex():
     import math
     c = 1.0 / math.sqrt(2)
     assert is_normalized_spinor(c, 1j * c)
+
+
+# ---------------------------------------------------------------------------
+# spinor_embed
+# ---------------------------------------------------------------------------
+
+
+def test_spinor_embed_zero_state_maps_to_identity():
+    """Direct embedding of |0⟩ = (1, 0) should give q = 1 + 0i + 0j + 0k."""
+    from rqm_core.spinor import spinor_embed
+    q = spinor_embed(1.0, 0.0)
+    assert q.is_unit()
+    assert q.w == pytest.approx(1.0)
+    assert q.x == pytest.approx(0.0, abs=1e-9)
+    assert q.y == pytest.approx(0.0, abs=1e-9)
+    assert q.z == pytest.approx(0.0, abs=1e-9)
+
+
+def test_spinor_embed_one_state():
+    """Direct embedding of |1⟩ = (0, 1) should give q = 0 + 0i + 1j + 0k."""
+    from rqm_core.spinor import spinor_embed
+    q = spinor_embed(0.0, 1.0)
+    assert q.is_unit()
+    assert q.w == pytest.approx(0.0, abs=1e-9)
+    assert q.y == pytest.approx(1.0)
+
+
+def test_spinor_embed_component_mapping():
+    """q_ψ = a0 + a1·i + b0·j + b1·k for α = a0 + a1·i, β = b0 + b1·i."""
+    from rqm_core.spinor import spinor_embed
+    import math
+    c = 1.0 / math.sqrt(2.0)
+    # α = c (pure real), β = c·i (pure imaginary)
+    q = spinor_embed(c, 1j * c)
+    assert q.is_unit()
+    # a0 = c, a1 = 0, b0 = 0, b1 = c
+    assert q.w == pytest.approx(c)
+    assert q.x == pytest.approx(0.0, abs=1e-9)
+    assert q.y == pytest.approx(0.0, abs=1e-9)
+    assert q.z == pytest.approx(c)
+
+
+def test_spinor_embed_is_unit():
+    from rqm_core.spinor import spinor_embed
+    q = spinor_embed(0.6, 0.8)
+    assert q.is_unit()
+
+
+def test_spinor_embed_unnormalized_input_normalizes():
+    from rqm_core.spinor import spinor_embed
+    q = spinor_embed(3.0, 4.0)
+    assert q.is_unit()
+    # After normalization: α = 3/5, β = 4/5 (both real)
+    assert q.w == pytest.approx(0.6)
+    assert q.y == pytest.approx(0.8)
+
+
+def test_spinor_embed_zero_raises():
+    from rqm_core.spinor import spinor_embed
+    with pytest.raises(ValueError):
+        spinor_embed(0.0, 0.0)

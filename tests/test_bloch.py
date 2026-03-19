@@ -163,3 +163,44 @@ def test_validate_bloch_vector_non_finite():
     from rqm_core.bloch import validate_bloch_vector
     with pytest.raises(ValueError, match="finite"):
         validate_bloch_vector(float("inf"), 0.0, 0.0)
+
+
+# ---------------------------------------------------------------------------
+# measurement_probabilities
+# ---------------------------------------------------------------------------
+
+
+def test_measurement_probabilities_north_pole():
+    """Bloch north pole |0⟩: P(0)=1, P(1)=0."""
+    from rqm_core.bloch import measurement_probabilities
+    p0, p1 = measurement_probabilities(0.0, 0.0, 1.0)
+    assert p0 == pytest.approx(1.0)
+    assert p1 == pytest.approx(0.0, abs=1e-9)
+
+
+def test_measurement_probabilities_south_pole():
+    """Bloch south pole |1⟩: P(0)=0, P(1)=1."""
+    from rqm_core.bloch import measurement_probabilities
+    p0, p1 = measurement_probabilities(0.0, 0.0, -1.0)
+    assert p0 == pytest.approx(0.0, abs=1e-9)
+    assert p1 == pytest.approx(1.0)
+
+
+def test_measurement_probabilities_equator():
+    """Equatorial state (z=0) gives equal probability."""
+    from rqm_core.bloch import measurement_probabilities
+    p0, p1 = measurement_probabilities(1.0, 0.0, 0.0)
+    assert p0 == pytest.approx(0.5)
+    assert p1 == pytest.approx(0.5)
+
+
+def test_measurement_probabilities_sum_to_one():
+    from rqm_core.bloch import measurement_probabilities
+    p0, p1 = measurement_probabilities(0.6, 0.8, 0.0)
+    assert p0 + p1 == pytest.approx(1.0)
+
+
+def test_measurement_probabilities_invalid_z():
+    from rqm_core.bloch import measurement_probabilities
+    with pytest.raises(ValueError):
+        measurement_probabilities(0.0, 0.0, 2.0)
