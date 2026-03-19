@@ -6,6 +6,7 @@ from rqm_core.spinor import (
     spinor_norm,
     is_normalized_spinor,
     spinor_to_quaternion,
+    spinor_embed,
     spinor_to_su2,
     state_fidelity,
 )
@@ -24,6 +25,7 @@ from rqm_core.bloch import (
     bloch_from_quaternion,
     bloch_radius,
     validate_bloch_vector,
+    measurement_probabilities,
 )
 from rqm_core.linalg import (
     normalize_vector,
@@ -34,6 +36,19 @@ from rqm_core.linalg import (
     matrix_close,
     complex_close,
 )
+from rqm_core.gates import (
+    gate_identity,
+    gate_x,
+    gate_y,
+    gate_z,
+    gate_h,
+    gate_s,
+    gate_t,
+    gate_rx,
+    gate_ry,
+    gate_rz,
+    match_gate,
+)
 
 __all__ = [
     # Quaternion
@@ -43,6 +58,7 @@ __all__ = [
     "spinor_norm",
     "is_normalized_spinor",
     "spinor_to_quaternion",
+    "spinor_embed",
     "spinor_to_su2",
     "state_fidelity",
     # SU(2)
@@ -59,6 +75,7 @@ __all__ = [
     "bloch_from_quaternion",
     "bloch_radius",
     "validate_bloch_vector",
+    "measurement_probabilities",
     # Linear algebra
     "normalize_vector",
     "vector_norm",
@@ -67,6 +84,18 @@ __all__ = [
     "matrix_dagger",
     "matrix_close",
     "complex_close",
+    # Gates
+    "gate_identity",
+    "gate_x",
+    "gate_y",
+    "gate_z",
+    "gate_h",
+    "gate_s",
+    "gate_t",
+    "gate_rx",
+    "gate_ry",
+    "gate_rz",
+    "match_gate",
 ]
 
 __version__ = "0.1.0"

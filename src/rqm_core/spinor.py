@@ -89,6 +89,44 @@ def spinor_to_quaternion(alpha: complex, beta: complex) -> Quaternion:
     return Quaternion(w, x, y, z)
 
 
+def spinor_embed(alpha: complex, beta: complex) -> Quaternion:
+    """Embed a normalized spinor directly into quaternion coordinates.
+
+    This is the canonical direct embedding described in the quaternion theory
+    (cf. Section 5 of the RQM quaternion theory document)::
+
+        α = a₀ + a₁·i,   β = b₀ + b₁·i
+        q_ψ = a₀ + a₁·i + b₀·j + b₁·k
+
+    Because the spinor is normalized (``|α|² + |β|² = 1``), the resulting
+    quaternion is automatically a unit quaternion on S³.
+
+    **Distinction from** :func:`spinor_to_quaternion`: that function extracts
+    the SU(2)-matrix-convention quaternion (``w=Re(α), z=-Im(α), y=Re(β),
+    x=-Im(β)``), which aligns the quaternion with the SU(2) matrix
+    isomorphism.  This function instead performs the *component-direct*
+    embedding where real and imaginary parts of each amplitude land in their
+    corresponding quaternion slots ``(w, x, y, z) = (a₀, a₁, b₀, b₁)``.
+
+    Both embeddings produce a unit quaternion on S³; the choice of embedding
+    is a convention that must remain consistent across the codebase.  This
+    function should be used wherever the component-direct (theory §5) form is
+    needed, e.g. in visualization or Hopf-fibration computations.
+
+    Args:
+        alpha: Amplitude of ``|0⟩`` (``α = a₀ + a₁·i``).
+        beta:  Amplitude of ``|1⟩`` (``β = b₀ + b₁·i``).
+
+    Returns:
+        Unit quaternion ``q = a₀ + a₁·i + b₀·j + b₁·k``.
+
+    Raises:
+        ValueError: If the spinor is zero.
+    """
+    a, b = normalize_spinor(alpha, beta)
+    return Quaternion(a.real, a.imag, b.real, b.imag)
+
+
 def spinor_to_su2(alpha: complex, beta: complex) -> SU2Matrix:
     """Return the SU(2) matrix corresponding to the spinor ``|ψ⟩``.
 

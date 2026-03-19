@@ -280,3 +280,186 @@ def test_scalar_part_identity():
 def test_vector_part_identity():
     q = Quaternion.identity()
     assert q.vector_part() == (0.0, 0.0, 0.0)
+
+
+# ---------------------------------------------------------------------------
+# from_axis_angle_vec
+# ---------------------------------------------------------------------------
+
+
+def test_from_axis_angle_vec_x_matches_from_axis_angle():
+    q1 = Quaternion.from_axis_angle("x", 1.2)
+    q2 = Quaternion.from_axis_angle_vec((1.0, 0.0, 0.0), 1.2)
+    assert q1 == q2
+
+
+def test_from_axis_angle_vec_y_matches_from_axis_angle():
+    q1 = Quaternion.from_axis_angle("y", 0.8)
+    q2 = Quaternion.from_axis_angle_vec((0.0, 1.0, 0.0), 0.8)
+    assert q1 == q2
+
+
+def test_from_axis_angle_vec_z_matches_from_axis_angle():
+    q1 = Quaternion.from_axis_angle("z", 2.1)
+    q2 = Quaternion.from_axis_angle_vec((0.0, 0.0, 1.0), 2.1)
+    assert q1 == q2
+
+
+def test_from_axis_angle_vec_unnormalized_axis():
+    """Unnormalized axis should be normalized internally."""
+    q = Quaternion.from_axis_angle_vec((3.0, 0.0, 0.0), math.pi)
+    assert q.is_unit()
+    assert q.w == pytest.approx(0.0, abs=1e-9)
+    assert q.x == pytest.approx(1.0)
+
+
+def test_from_axis_angle_vec_diagonal_axis():
+    s = 1.0 / math.sqrt(2.0)
+    q = Quaternion.from_axis_angle_vec((s, 0.0, s), math.pi)
+    assert q.is_unit()
+    # w = cos(π/2) = 0
+    assert q.w == pytest.approx(0.0, abs=1e-9)
+    # x and z should each be s·sin(π/2) = s
+    assert q.x == pytest.approx(s)
+    assert q.z == pytest.approx(s)
+
+
+def test_from_axis_angle_vec_wrong_length():
+    with pytest.raises(ValueError):
+        Quaternion.from_axis_angle_vec((1.0, 0.0), 1.0)
+
+
+def test_from_axis_angle_vec_zero_axis():
+    with pytest.raises(ValueError, match="non-zero"):
+        Quaternion.from_axis_angle_vec((0.0, 0.0, 0.0), 1.0)
+
+
+# ---------------------------------------------------------------------------
+# canonicalize
+# ---------------------------------------------------------------------------
+
+
+def test_canonicalize_positive_w_unchanged():
+    q = Quaternion.from_axis_angle("z", 1.0)
+    assert q.w > 0
+    assert q.canonicalize().w >= 0.0
+
+
+def test_canonicalize_negative_w_flipped():
+    # Angle of 3π/2 → w = cos(3π/4) < 0
+    q = Quaternion.from_axis_angle("z", 3.0 * math.pi / 2.0)
+    assert q.w < 0
+    c = q.canonicalize()
+    assert c.w >= 0.0
+
+
+def test_canonicalize_is_unit():
+    q = Quaternion(0.5, 0.5, 0.5, 0.5)
+    assert q.canonicalize().is_unit()
+
+
+def test_canonicalize_same_rotation_matrix():
+    """q and -q should give the same SO(3) rotation; canonicalize preserves that."""
+    q = Quaternion.from_axis_angle("x", 3.5)
+    c = q.canonicalize()
+    r1 = q.normalize().to_rotation_matrix()
+    r2 = c.to_rotation_matrix()
+    assert np.allclose(r1, r2, atol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# to_axis_angle
+# ---------------------------------------------------------------------------
+
+
+def test_to_axis_angle_x_rotation():
+    theta = 1.3
+    q = Quaternion.from_axis_angle("x", theta)
+    axis, angle = q.to_axis_angle()
+    assert angle == pytest.approx(theta)
+    assert math.isclose(axis[0], 1.0, abs_tol=1e-9)
+    assert math.isclose(axis[1], 0.0, abs_tol=1e-9)
+    assert math.isclose(axis[2], 0.0, abs_tol=1e-9)
+
+
+def test_to_axis_angle_y_rotation():
+    theta = 0.9
+    q = Quaternion.from_axis_angle("y", theta)
+    axis, angle = q.to_axis_angle()
+    assert angle == pytest.approx(theta)
+    assert math.isclose(axis[1], 1.0, abs_tol=1e-9)
+
+
+def test_to_axis_angle_z_rotation():
+    theta = 2.2
+    q = Quaternion.from_axis_angle("z", theta)
+    axis, angle = q.to_axis_angle()
+    assert angle == pytest.approx(theta)
+    assert math.isclose(axis[2], 1.0, abs_tol=1e-9)
+
+
+def test_to_axis_angle_identity_arbitrary_axis():
+    q = Quaternion.identity()
+    axis, angle = q.to_axis_angle()
+    assert angle == pytest.approx(0.0, abs=1e-9)
+    # Axis is arbitrary for identity; just check it's a unit vector
+    n = math.sqrt(sum(a ** 2 for a in axis))
+    assert n == pytest.approx(1.0)
+
+
+def test_to_axis_angle_roundtrip():
+    """from_axis_angle_vec(axis, angle) → to_axis_angle() should recover the original."""
+    original_axis = (1.0 / math.sqrt(3.0),) * 3
+    original_angle = 1.7
+    q = Quaternion.from_axis_angle_vec(original_axis, original_angle)
+    recovered_axis, recovered_angle = q.to_axis_angle()
+    assert recovered_angle == pytest.approx(original_angle)
+    for got, expected in zip(recovered_axis, original_axis):
+        assert got == pytest.approx(expected, abs=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# rotate_vector
+# ---------------------------------------------------------------------------
+
+
+def test_rotate_vector_identity_no_change():
+    v = (1.0, 2.0, 3.0)
+    q = Quaternion.identity()
+    result = q.rotate_vector(v)
+    assert result[0] == pytest.approx(1.0)
+    assert result[1] == pytest.approx(2.0)
+    assert result[2] == pytest.approx(3.0)
+
+
+def test_rotate_vector_x_pi_rotates_y_to_minus_y():
+    """180° rotation about x maps (0,1,0) → (0,-1,0)."""
+    q = Quaternion.from_axis_angle("x", math.pi)
+    v = q.rotate_vector((0.0, 1.0, 0.0))
+    assert v[0] == pytest.approx(0.0, abs=1e-9)
+    assert v[1] == pytest.approx(-1.0, abs=1e-9)
+    assert v[2] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_rotate_vector_z_pi_rotates_x_to_minus_x():
+    """180° rotation about z maps (1,0,0) → (-1,0,0)."""
+    q = Quaternion.from_axis_angle("z", math.pi)
+    v = q.rotate_vector((1.0, 0.0, 0.0))
+    assert v[0] == pytest.approx(-1.0, abs=1e-9)
+    assert v[1] == pytest.approx(0.0, abs=1e-9)
+    assert v[2] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_rotate_vector_preserves_norm():
+    q = Quaternion.from_axis_angle_vec((1.0, 1.0, 1.0), 1.2)
+    v = (0.6, 0.8, 0.0)
+    result = q.rotate_vector(v)
+    original_norm = math.sqrt(sum(c ** 2 for c in v))
+    result_norm = math.sqrt(sum(c ** 2 for c in result))
+    assert result_norm == pytest.approx(original_norm)
+
+
+def test_rotate_vector_wrong_length():
+    q = Quaternion.identity()
+    with pytest.raises(ValueError):
+        q.rotate_vector((1.0, 0.0))
