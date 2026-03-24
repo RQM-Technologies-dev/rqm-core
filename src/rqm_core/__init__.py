@@ -1,4 +1,12 @@
-"""rqm_core – foundational quaternion, spinor, SU(2), and Bloch mathematics."""
+"""rqm_core – foundational quaternion, spinor, SU(2), and Bloch mathematics.
+
+This package also includes an additive coupling / entanglement analysis layer
+for multi-qubit circuits.  See :mod:`rqm_core.analysis.coupling` for details.
+
+Architecture layers:
+  - Local single-qubit structure → quaternionic / SU(2) (this module's core)
+  - Multi-qubit entanglement / correlation → :mod:`rqm_core.analysis.coupling`
+"""
 
 from rqm_core.quaternion import Quaternion
 from rqm_core.spinor import (
@@ -49,6 +57,20 @@ from rqm_core.gates import (
     gate_rz,
     match_gate,
 )
+from rqm_core.analysis.coupling.types import (
+    GateOp,
+    Circuit,
+    PairMetric,
+    CouplingAnalysisResult,
+    CouplingAnalysisOptions,
+    OptimizationPreservationResult,
+)
+from rqm_core.analysis.coupling.analyze_circuit_coupling import (
+    analyze_circuit_coupling,
+)
+from rqm_core.analysis.coupling.analyze_optimization_preservation import (
+    analyze_optimization_preservation,
+)
 
 __all__ = [
     # Quaternion
@@ -96,6 +118,17 @@ __all__ = [
     "gate_ry",
     "gate_rz",
     "match_gate",
+    # Analysis – circuit IR
+    "GateOp",
+    "Circuit",
+    # Analysis – result types
+    "PairMetric",
+    "CouplingAnalysisResult",
+    "CouplingAnalysisOptions",
+    "OptimizationPreservationResult",
+    # Analysis – entry points
+    "analyze_circuit_coupling",
+    "analyze_optimization_preservation",
 ]
 
 __version__ = "0.1.0"
