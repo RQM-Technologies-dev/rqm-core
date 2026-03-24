@@ -77,6 +77,7 @@ across the whole ecosystem: no duplication, no conflicting conventions, and no f
 - **Bloch sphere mappings** – state↔Bloch, Bloch↔state, quaternion rotation to Bloch vector
 - **Matrix helpers** – trace, determinant, conjugate transpose (dagger), norm, closeness checks
 - **Validation utilities** – axis, complex pair, matrix shape, real number, tolerance checks
+- **Coupling / entanglement analysis** – qualitative gate detection and measured 2-qubit entanglement metrics (concurrence, entropy, fidelity); see the [Coupling Analysis](#coupling--entanglement-analysis) section below
 
 ---
 
@@ -124,7 +125,86 @@ all angles are in **radians**.
 
 ---
 
-## What Is Intentionally *Not* Included
+## Coupling / Entanglement Analysis
+
+`rqm_core` includes an additive, production-ready analysis layer for measuring and qualifying multi-qubit coupling and entanglement.
+
+### Architecture
+
+The two layers are mathematically complementary and do not compete:
+
+| Layer | Scope | Technology |
+|---|---|---|
+| **Single-qubit local structure** | Individual qubit rotations | Quaternionic / SU(2) (quaternion optimizer) |
+| **Multi-qubit entanglement** | Cross-qubit coupling / correlation | Statevector simulation, concurrence, entropy |
+
+The quaternionic single-qubit optimizer is the correct route for local SU(2) operations.  The coupling analysis layer adds truthful multi-qubit analysis *beside* it.
+
+### Quickstart
+
+```python
+from rqm_core import Circuit, GateOp, analyze_circuit_coupling
+
+# Bell state: H q0, CNOT q0→q1
+circuit = Circuit(
+    num_qubits=2,
+    operations=[
+        GateOp(name="H",    qubits=[0]),
+        GateOp(name="CNOT", qubits=[0, 1]),
+    ],
+)
+
+result = analyze_circuit_coupling(circuit)
+print(result.mode)          # "measured"
+print(result.is_entangled)  # True
+print(result.pair_metrics[0].value)  # 1.0  (concurrence)
+```
+
+### Measured Analysis Scope (first implementation)
+
+| Criterion | Scope |
+|---|---|
+| Qubits | Exactly 2 |
+| Initial state | \|00⟩ |
+| Single-qubit gates | I, X, Y, Z, H, S, T, Rx(θ), Ry(θ), Rz(θ), U(θ,φ,λ) / U3 |
+| Two-qubit gates | CNOT / CX, CZ, SWAP |
+| Metrics | Concurrence, von Neumann entropy |
+
+Circuits outside this scope receive an honest **qualitative fallback** (gate detection only) with explicit `limitations` in the result — no fabricated measured values.
+
+### Result Contract
+
+```python
+@dataclass
+class CouplingAnalysisResult:
+    mode: str                          # "measured" | "qualitative"
+    provenance: str                    # "rqm-core" | "parser"
+    qubit_count: int
+    analyzed_pairs: list[tuple[int, int]]
+    has_entangling_gates: bool
+    entangling_gate_count: int
+    entangling_gates_seen: list[str]
+    last_entangling_gate: str | None
+    is_entangled: bool | None          # None in qualitative mode
+    pair_metrics: list[PairMetric]     # empty in qualitative mode
+    fidelity_preserved: float | None
+    notes: list[str]
+    limitations: list[str]
+```
+
+### Compiler Verification
+
+```python
+from rqm_core import analyze_optimization_preservation
+
+result = analyze_optimization_preservation(original_circuit, optimized_circuit)
+print(result.fidelity_preserved)              # e.g. 1.0
+print(result.preserved_entanglement_structure) # True / False / None
+```
+
+---
+
+
 
 - Qiskit / PennyLane / Cirq adapters
 - Backend execution or hardware drivers
@@ -223,6 +303,14 @@ rqm-core/
     validation.py    – shared validation helpers (axis, matrix shape, tolerances)
     types.py         – shared type aliases (ComplexVector2, BlochVector, SU2Matrix, …)
     utils.py         – small math utilities (angle_wrap, safe_norm, is_finite_*)
+    analysis/
+      coupling/
+        types.py                          – Circuit IR + result contract dataclasses
+        detect_entangling_structure.py    – qualitative gate-based detection
+        simulate_two_qubit_state.py       – ideal 2-qubit pure-state simulator
+        metrics.py                        – concurrence, entropy, fidelity helpers
+        analyze_circuit_coupling.py       – main public entry point
+        analyze_optimization_preservation.py – before/after compiler verification
 
   tests/
     test_quaternion.py
@@ -233,6 +321,13 @@ rqm-core/
     test_utils.py
     test_validation.py
     test_public_api.py
+    analysis/
+      coupling/
+        test_detect_entangling_structure.py
+        test_simulate_two_qubit_state.py
+        test_metrics.py
+        test_analyze_circuit_coupling.py
+        test_analyze_optimization_preservation.py
 
   examples/
     quaternion_basics.py    – quaternion construction, composition, conversion
@@ -296,6 +391,8 @@ Planned additions for future minor versions:
 - [ ] Mixed-state density matrix utilities
 - [ ] SU(2) Lie-algebra generators and exponential map
 - [ ] Type stub files (`.pyi`) for IDE completions
+- [ ] Coupling analysis for >2 qubits (partial trace for n-qubit systems, mutual information)
+- [ ] Support for additional gate sets in the 2-qubit simulator
 
 No Qiskit or framework dependencies will ever be added to this package.
 
