@@ -32,10 +32,30 @@ pip install rqm-core
 ## Where This Fits
 
 ```
-rqm-core  →  rqm-compiler  →  rqm-qiskit / rqm-braket
+rqm-core  →  rqm-circuits  →  rqm-compiler  →  rqm-qiskit / rqm-braket
+                                                        ↓ (optional)
+                                                   rqm-optimize
 ```
 
-`rqm-core` provides the canonical mathematical layer of the RQM ecosystem, including quaternion, spinor, Bloch, and SU(2) foundations. Higher-level packages (`rqm-compiler`, `rqm-qiskit`, `rqm-braket`) build on top of it.
+`rqm-core` provides the canonical mathematical layer of the RQM ecosystem —
+quaternion, spinor, Bloch, and SU(2) foundations.  It owns no circuit schema,
+no compiler passes, and no backend execution logic.
+
+**Layer responsibilities:**
+
+| Package | Role |
+|---|---|
+| **rqm-core** | Mathematical spine — quaternion, spinor, SU(2), Bloch, coupling analysis |
+| **rqm-circuits** | Canonical external circuit IR / wire format (API, Studio, interchange) |
+| **rqm-compiler** | Optimization and rewriting engine — consumes rqm-circuits programs |
+| **rqm-qiskit** | IBM / Qiskit lowering and execution bridge |
+| **rqm-braket** | AWS / Braket lowering and execution bridge |
+| **rqm-optimize** | Optional backend-adjacent optimization / compression layer |
+
+`rqm-circuits 0.2` is the canonical external circuit format for all API and Studio workflows.
+`rqm-compiler` consumes and optimizes circuit programs but is not the primary public wire format.
+Backend packages (`rqm-qiskit`, `rqm-braket`) translate optimized circuits into vendor-native objects.
+`rqm-optimize` is optional and sits later in the execution flow, above the backend bridges.
 
 ---
 
@@ -43,7 +63,8 @@ rqm-core  →  rqm-compiler  →  rqm-qiskit / rqm-braket
 
 - Documentation: https://docs.rqmtechnologies.com
 - Website: https://rqmtechnologies.com
-- Next package in the stack: [`rqm-compiler`](https://github.com/RQM-Technologies-dev/rqm-compiler)
+- Next package in the stack: [`rqm-circuits`](https://github.com/RQM-Technologies-dev/rqm-circuits) — the canonical external circuit IR for API and Studio workflows (rqm-circuits 0.2+)
+- After circuits: [`rqm-compiler`](https://github.com/RQM-Technologies-dev/rqm-compiler) — optimization and rewriting engine
 
 ---
 
@@ -204,7 +225,9 @@ print(result.preserved_entanglement_structure) # True / False / None
 
 ---
 
+## What Is Not Included
 
+`rqm-core` intentionally does **not** own:
 
 - Qiskit / PennyLane / Cirq adapters
 - Backend execution or hardware drivers
@@ -234,9 +257,21 @@ pip install "rqm-core[dev]"
 
 ## Ecosystem Role
 
-`rqm-core` is the **spine** of the RQM Python ecosystem.  It provides the
+`rqm-core` is the **mathematical spine** of the RQM Python ecosystem.  It provides the
 single canonical implementation of all shared mathematical primitives so that
 downstream packages never need to re-implement or copy them.
+
+**What rqm-core owns:**
+- Quaternion primitives (Hamilton product, conjugate, inverse, axis-angle, SO(3)/SU(2) conversions)
+- SU(2) / Bloch / spinor mathematics
+- Shared linear algebra helpers
+- Coupling / entanglement analysis primitives
+
+**What rqm-core does NOT own:**
+- Circuit IR or schema — that is `rqm-circuits`
+- Compiler rewrites or optimization passes — that is `rqm-compiler`
+- Backend execution or vendor-native objects — that is `rqm-qiskit` / `rqm-braket`
+- API service boundaries or Studio wire formats — those live above `rqm-circuits`
 
 **How downstream packages declare the dependency** (example `pyproject.toml` excerpt):
 

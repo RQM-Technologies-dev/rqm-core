@@ -3,9 +3,12 @@
 This package also includes an additive coupling / entanglement analysis layer
 for multi-qubit circuits.  See :mod:`rqm_core.analysis.coupling` for details.
 
-Architecture layers:
+Architecture layers (rqm_core → rqm_circuits → rqm_compiler → backends):
   - Local single-qubit structure → quaternionic / SU(2) (this module's core)
   - Multi-qubit entanglement / correlation → :mod:`rqm_core.analysis.coupling`
+  - Circuit IR / wire format → rqm-circuits (canonical external boundary)
+  - Optimization / rewriting → rqm-compiler
+  - Backend execution → rqm-qiskit / rqm-braket
 """
 
 from rqm_core.quaternion import Quaternion
