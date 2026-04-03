@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 from numpy.typing import NDArray
 
-from rqm_core.quaternion import Quaternion
 from rqm_core.linalg import is_unitary as _is_unitary, matrix_determinant
+from rqm_core.quaternion import Quaternion
 from rqm_core.validation import validate_axis, validate_square_matrix
 
 
@@ -81,6 +83,125 @@ def su2_identity() -> NDArray[np.complex128]:
         2×2 complex identity matrix.
     """
     return np.eye(2, dtype=np.complex128)
+
+
+def _wrap_to_pi(angle: float) -> float:
+    """Normalize an angle into ``(-π, π]`` deterministically."""
+    wrapped = (angle + math.pi) % (2.0 * math.pi) - math.pi
+    if wrapped <= -math.pi:
+        return math.pi
+    return wrapped
+
+
+def _zero_small(angle: float, *, atol: float) -> float:
+    """Clamp tiny angles to exact zero for deterministic output."""
+    if abs(angle) <= atol:
+        return 0.0
+    return angle
+
+
+def _axis_sequence_if_pure_rotation(
+    q: Quaternion, *, atol: float
+) -> tuple[tuple[str, float], ...] | None:
+    """Return a single-axis named gate sequence when *q* is axis-aligned."""
+    x, y, z = q.x, q.y, q.z
+
+    # A pure axis rotation has exactly one meaningful imaginary component.
+    if abs(y) <= atol and abs(z) <= atol and abs(x) > atol:
+        angle = _zero_small(_wrap_to_pi(2.0 * math.atan2(x, q.w)), atol=atol)
+        return (("RX", angle),) if angle != 0.0 else tuple()
+    if abs(x) <= atol and abs(z) <= atol and abs(y) > atol:
+        angle = _zero_small(_wrap_to_pi(2.0 * math.atan2(y, q.w)), atol=atol)
+        return (("RY", angle),) if angle != 0.0 else tuple()
+    if abs(x) <= atol and abs(y) <= atol and abs(z) > atol:
+        angle = _zero_small(_wrap_to_pi(2.0 * math.atan2(z, q.w)), atol=atol)
+        return (("RZ", angle),) if angle != 0.0 else tuple()
+    return None
+
+
+def su2_to_named_gate_sequence(
+    matrix: NDArray[np.complex128],
+    *,
+    simplify_axis: bool = True,
+    atol: float = 1e-9,
+) -> tuple[tuple[str, float], ...]:
+    """Decompose an SU(2) element into named single-qubit rotation gates.
+
+    Convention:
+
+    * Primary decomposition is Euler ZYZ in named-gate form
+      ``RZ(φ) -> RY(θ) -> RZ(λ)``.
+    * Returned angles are normalized to ``(-π, π]`` and tiny values
+      ``|angle| <= atol`` are clamped to exactly ``0`` for determinism.
+    * Near-identity rotations (``θ ≈ 0`` and vanishing Z phase) return an
+      empty sequence ``()``.
+    * If ``simplify_axis=True`` and the element is a pure x/y/z-axis
+      rotation within *atol*, return a single ``RX``/``RY``/``RZ`` gate.
+
+    The decomposition is backend-agnostic and contains no provider policy.
+
+    Args:
+        matrix: 2×2 SU(2) matrix.
+        simplify_axis: Enable safe single-axis simplification.
+        atol: Absolute tolerance for unitary checks and zero-clamping.
+
+    Returns:
+        Tuple of ``(gate_name, angle)`` entries.
+
+    Raises:
+        ValueError: If *matrix* is not a valid SU(2) matrix.
+    """
+    validate_su2_matrix(matrix, atol=atol)
+    m = np.asarray(matrix, dtype=np.complex128)
+
+    alpha = m[0, 0]
+    beta = m[1, 0]
+
+    c = abs(alpha)
+    s = abs(beta)
+    theta = _zero_small(_wrap_to_pi(2.0 * math.atan2(s, c)), atol=atol)
+
+    # Near-RZ branch (theta ≈ 0): only sum (φ + λ) is observable.
+    # Deterministic gauge choice: set φ = 0, keep λ from alpha phase.
+    if abs(theta) <= atol:
+        phi = 0.0
+        lambd = _zero_small(_wrap_to_pi(-2.0 * math.atan2(alpha.imag, alpha.real)), atol=atol)
+    else:
+        a = math.atan2(alpha.imag, alpha.real)  # a = arg(alpha)
+        b = math.atan2(beta.imag, beta.real)    # b = arg(beta)
+        phi = _zero_small(_wrap_to_pi(b - a), atol=atol)
+        lambd = _zero_small(_wrap_to_pi(-a - b), atol=atol)
+
+    q = su2_to_quaternion(m)
+    if simplify_axis:
+        axis_sequence = _axis_sequence_if_pure_rotation(q, atol=atol)
+        if axis_sequence is not None:
+            return axis_sequence
+
+    if theta == 0.0 and phi == 0.0 and lambd == 0.0:
+        return tuple()
+    return (("RZ", phi), ("RY", theta), ("RZ", lambd))
+
+
+def quaternion_to_named_gate_sequence(
+    q: Quaternion, *, simplify_axis: bool = True, atol: float = 1e-9
+) -> tuple[tuple[str, float], ...]:
+    """Decompose a unit quaternion into named rotation gates.
+
+    This is a convenience wrapper over :func:`su2_to_named_gate_sequence`
+    using the quaternion→SU(2) convention in :func:`quaternion_to_su2`.
+
+    Args:
+        q: Quaternion representing a single-qubit SU(2) element.
+        simplify_axis: Enable safe single-axis simplification.
+        atol: Absolute tolerance used for normalization and decomposition.
+
+    Returns:
+        Tuple of ``(gate_name, angle)`` entries.
+    """
+    return su2_to_named_gate_sequence(
+        quaternion_to_su2(q), simplify_axis=simplify_axis, atol=atol
+    )
 
 
 # ------------------------------------------------------------------
