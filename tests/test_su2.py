@@ -8,7 +8,9 @@ import pytest
 from rqm_core.quaternion import Quaternion
 from rqm_core.su2 import (
     quaternion_to_su2,
+    quaternion_to_named_gate_sequence,
     su2_to_quaternion,
+    su2_to_named_gate_sequence,
     axis_angle_to_su2,
     su2_identity,
     is_unitary,
@@ -144,3 +146,83 @@ def test_validate_su2_matrix_det_not_one():
     bad = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
     with pytest.raises(ValueError, match="determinant"):
         validate_su2_matrix(bad)
+
+
+# ---------------------------------------------------------------------------
+# Named-gate decomposition helpers
+# ---------------------------------------------------------------------------
+
+
+def _sequence_to_matrix(
+    sequence: tuple[tuple[str, float], ...]
+) -> np.ndarray:
+    """Build an SU(2) matrix from a named rotation sequence."""
+    result = su2_identity()
+    for gate, angle in sequence:
+        if gate == "RX":
+            result = result @ axis_angle_to_su2("x", angle)
+        elif gate == "RY":
+            result = result @ axis_angle_to_su2("y", angle)
+        elif gate == "RZ":
+            result = result @ axis_angle_to_su2("z", angle)
+        else:
+            raise AssertionError(f"Unexpected gate {gate!r}")
+    return result
+
+
+def test_named_decomposition_identity_is_empty():
+    seq = quaternion_to_named_gate_sequence(Quaternion.identity())
+    assert seq == tuple()
+
+
+def test_named_decomposition_near_identity_is_empty():
+    q = Quaternion.from_axis_angle("z", 1e-12)
+    seq = quaternion_to_named_gate_sequence(q, atol=1e-9)
+    assert seq == tuple()
+
+
+def test_named_decomposition_pure_z_is_deterministic():
+    angle = 1.234
+    q = Quaternion.from_axis_angle("z", angle)
+    seq = quaternion_to_named_gate_sequence(q)
+    assert seq == (("RZ", pytest.approx(angle)),)
+
+
+def test_named_decomposition_pure_x_and_y_single_axis():
+    x_seq = quaternion_to_named_gate_sequence(
+        Quaternion.from_axis_angle("x", 0.8)
+    )
+    y_seq = quaternion_to_named_gate_sequence(
+        Quaternion.from_axis_angle("y", -0.6)
+    )
+    assert x_seq == (("RX", pytest.approx(0.8)),)
+    assert y_seq == (("RY", pytest.approx(-0.6)),)
+
+
+def test_named_decomposition_generic_reconstructs_same_matrix():
+    q = Quaternion(0.71, -0.23, 0.35, -0.56).normalize()
+    original = quaternion_to_su2(q)
+    seq = quaternion_to_named_gate_sequence(q, simplify_axis=False)
+    rebuilt = _sequence_to_matrix(seq)
+    assert len(seq) == 3
+    assert seq[0][0] == "RZ"
+    assert seq[1][0] == "RY"
+    assert seq[2][0] == "RZ"
+    assert np.allclose(original, rebuilt, atol=1e-9)
+
+
+def test_named_decomposition_is_deterministic_over_repeated_runs():
+    q = Quaternion(0.48, -0.19, 0.61, 0.59).normalize()
+    seq_first = quaternion_to_named_gate_sequence(q, simplify_axis=False)
+    for _ in range(10):
+        assert quaternion_to_named_gate_sequence(
+            q, simplify_axis=False
+        ) == seq_first
+
+
+def test_su2_named_decomposition_matches_quaternion_helper():
+    q = Quaternion.from_axis_angle_vec((1.0, 1.0, 1.0), 0.7)
+    m = quaternion_to_su2(q)
+    from_q = quaternion_to_named_gate_sequence(q)
+    from_m = su2_to_named_gate_sequence(m)
+    assert from_q == from_m
