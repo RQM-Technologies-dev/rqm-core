@@ -8,6 +8,7 @@ import pytest
 from rqm_core.quaternion import Quaternion
 from rqm_core.su2 import (
     quaternion_to_su2,
+    quaternion_to_zyz,
     quaternion_to_named_gate_sequence,
     su2_to_quaternion,
     su2_to_named_gate_sequence,
@@ -226,3 +227,14 @@ def test_su2_named_decomposition_matches_quaternion_helper():
     from_q = quaternion_to_named_gate_sequence(q)
     from_m = su2_to_named_gate_sequence(m)
     assert from_q == from_m
+
+
+def test_quaternion_to_zyz_reconstructs_same_matrix():
+    q = Quaternion(0.71, -0.23, 0.35, -0.56).normalize()
+    alpha, beta, gamma = quaternion_to_zyz(q.w, q.x, q.y, q.z)
+    rebuilt = (
+        axis_angle_to_su2("z", alpha)
+        @ axis_angle_to_su2("y", beta)
+        @ axis_angle_to_su2("z", gamma)
+    )
+    assert np.allclose(quaternion_to_su2(q), rebuilt, atol=1e-9)

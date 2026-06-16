@@ -183,6 +183,47 @@ def su2_to_named_gate_sequence(
     return (("RZ", phi), ("RY", theta), ("RZ", lambd))
 
 
+def quaternion_to_zyz(
+    w: float,
+    x: float,
+    y: float,
+    z: float,
+    *,
+    atol: float = 1e-9,
+) -> tuple[float, float, float]:
+    """Return deterministic ZYZ Euler angles for a unit quaternion.
+
+    The returned tuple ``(alpha, beta, gamma)`` corresponds to
+    ``RZ(alpha) -> RY(beta) -> RZ(gamma)`` under the same SU(2) convention used
+    by :func:`quaternion_to_su2`.  Axis simplification is deliberately disabled
+    so compiler passes can lower canonical ``u1q`` operations into a stable
+    three-angle form and then apply their own backend policy.
+    """
+    q = Quaternion(w, x, y, z).normalize()
+    sequence = su2_to_named_gate_sequence(
+        quaternion_to_su2(q),
+        simplify_axis=False,
+        atol=atol,
+    )
+    if sequence == tuple():
+        return 0.0, 0.0, 0.0
+    if len(sequence) != 3:
+        raise ValueError("Expected ZYZ decomposition to return three rotations.")
+    return sequence[0][1], sequence[1][1], sequence[2][1]
+
+
+def u1q_to_zyz(
+    w: float,
+    x: float,
+    y: float,
+    z: float,
+    *,
+    atol: float = 1e-9,
+) -> tuple[float, float, float]:
+    """Alias for compiler-facing canonical ``u1q`` quaternion decomposition."""
+    return quaternion_to_zyz(w, x, y, z, atol=atol)
+
+
 def quaternion_to_named_gate_sequence(
     q: Quaternion, *, simplify_axis: bool = True, atol: float = 1e-9
 ) -> tuple[tuple[str, float], ...]:

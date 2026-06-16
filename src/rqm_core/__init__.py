@@ -1,11 +1,12 @@
 """rqm_core – foundational quaternion, spinor, SU(2), and Bloch mathematics.
 
-This package also includes an additive coupling / entanglement analysis layer
-for multi-qubit circuits.  See :mod:`rqm_core.analysis.coupling` for details.
+The legacy coupling / entanglement analysis imports are retained for backwards
+compatibility.  Canonical nonlocal analysis for API and Studio belongs in
+``rqm-entanglement``.
 
 Architecture layers (rqm_core → rqm_circuits → rqm_compiler → backends):
   - Local single-qubit structure → quaternionic / SU(2) (this module's core)
-  - Multi-qubit entanglement / correlation → :mod:`rqm_core.analysis.coupling`
+  - Multi-qubit entanglement / correlation → rqm-entanglement
   - Circuit IR / wire format → rqm-circuits (canonical external boundary)
   - Optimization / rewriting → rqm-compiler
   - Backend execution → rqm-qiskit / rqm-braket
@@ -27,6 +28,8 @@ from rqm_core.su2 import (
     su2_to_quaternion,
     axis_angle_to_su2,
     su2_to_named_gate_sequence,
+    quaternion_to_zyz,
+    u1q_to_zyz,
     quaternion_to_named_gate_sequence,
     is_unitary,
     determinant_close_to_one,
@@ -94,6 +97,8 @@ __all__ = [
     "su2_to_quaternion",
     "axis_angle_to_su2",
     "su2_to_named_gate_sequence",
+    "quaternion_to_zyz",
+    "u1q_to_zyz",
     "quaternion_to_named_gate_sequence",
     "is_unitary",
     "determinant_close_to_one",

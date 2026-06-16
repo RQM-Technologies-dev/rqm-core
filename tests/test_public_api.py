@@ -38,6 +38,8 @@ _EXPECTED_EXPORTS = [
     "quaternion_to_su2",
     "su2_to_quaternion",
     "axis_angle_to_su2",
+    "quaternion_to_zyz",
+    "u1q_to_zyz",
     "is_unitary",
     "determinant_close_to_one",
     "validate_su2_matrix",

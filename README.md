@@ -53,9 +53,10 @@ no compiler passes, and no backend execution logic.
 
 | Package | Role |
 |---|---|
-| **rqm-core** | Mathematical spine — quaternion, spinor, SU(2), Bloch, coupling analysis |
+| **rqm-core** | Mathematical spine — quaternion, spinor, SU(2), Bloch |
 | **rqm-circuits** | Canonical external circuit IR / wire format (API, Studio, interchange) |
 | **rqm-compiler** | Optimization and rewriting engine — consumes rqm-circuits programs |
+| **rqm-entanglement** | Canonical nonlocal layer — two-qubit tensor structure, coupling analysis, entanglement metrics |
 | **rqm-qiskit** | IBM / Qiskit lowering and execution bridge |
 | **rqm-braket** | AWS / Braket lowering and execution bridge |
 | **rqm-optimize** | Optional backend-adjacent optimization / compression layer |
@@ -106,7 +107,7 @@ across the whole ecosystem: no duplication, no conflicting conventions, and no f
 - **Bloch sphere mappings** – state↔Bloch, Bloch↔state, quaternion rotation to Bloch vector
 - **Matrix helpers** – trace, determinant, conjugate transpose (dagger), norm, closeness checks
 - **Validation utilities** – axis, complex pair, matrix shape, real number, tolerance checks
-- **Coupling / entanglement analysis** – qualitative gate detection and measured 2-qubit entanglement metrics (concurrence, entropy, fidelity); see the [Coupling Analysis](#coupling--entanglement-analysis) section below
+- **Compatibility coupling analysis** – legacy qualitative/measured helpers retained for existing imports; canonical nonlocal analysis now lives in `rqm-entanglement`
 
 ---
 
@@ -156,7 +157,7 @@ all angles are in **radians**.
 
 ## Coupling / Entanglement Analysis
 
-`rqm_core` includes an additive, production-ready analysis layer for measuring and qualifying multi-qubit coupling and entanglement.
+`rqm_core` retains a compatibility analysis layer for existing imports, but it is no longer the canonical owner of coupling and entanglement analysis.  New API and Studio integrations should call `rqm-entanglement`.
 
 ### Architecture
 
@@ -165,7 +166,7 @@ The two layers are mathematically complementary and do not compete:
 | Layer | Scope | Technology |
 |---|---|---|
 | **Single-qubit local structure** | Individual qubit rotations | Quaternionic / SU(2) (quaternion optimizer) |
-| **Multi-qubit entanglement** | Cross-qubit coupling / correlation | Statevector simulation, concurrence, entropy |
+| **Multi-qubit entanglement** | Cross-qubit coupling / correlation | `rqm-entanglement` state analysis, concurrence, entropy |
 
 The quaternionic single-qubit optimizer is the correct route for local SU(2) operations.  The coupling analysis layer adds truthful multi-qubit analysis *beside* it.
 
@@ -438,4 +439,3 @@ Planned additions for future minor versions:
 - [ ] Support for additional gate sets in the 2-qubit simulator
 
 No Qiskit or framework dependencies will ever be added to this package.
-
