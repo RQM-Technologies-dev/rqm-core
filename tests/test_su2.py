@@ -61,6 +61,57 @@ def test_axis_angle_to_su2_det_one():
     assert determinant_close_to_one(m)
 
 
+@pytest.mark.parametrize(
+    ("axis", "angle", "expected"),
+    [
+        (
+            "x",
+            0.73,
+            np.array(
+                [
+                    [math.cos(0.73 / 2), -1j * math.sin(0.73 / 2)],
+                    [-1j * math.sin(0.73 / 2), math.cos(0.73 / 2)],
+                ],
+                dtype=np.complex128,
+            ),
+        ),
+        (
+            "y",
+            -0.41,
+            np.array(
+                [
+                    [math.cos(-0.41 / 2), -math.sin(-0.41 / 2)],
+                    [math.sin(-0.41 / 2), math.cos(-0.41 / 2)],
+                ],
+                dtype=np.complex128,
+            ),
+        ),
+        (
+            "z",
+            1.19,
+            np.array(
+                [
+                    [np.exp(-1j * 1.19 / 2), 0.0],
+                    [0.0, np.exp(1j * 1.19 / 2)],
+                ],
+                dtype=np.complex128,
+            ),
+        ),
+    ],
+)
+def test_axis_angle_to_su2_matches_standard_rx_ry_rz(axis, angle, expected):
+    assert np.allclose(axis_angle_to_su2(axis, angle), expected, atol=1e-9)
+
+
+def test_quaternion_sign_is_global_phase_not_identical_su2():
+    q = Quaternion.from_axis_angle_vec((1.0, 2.0, 3.0), 0.79)
+    neg_q = Quaternion(-q.w, -q.x, -q.y, -q.z)
+
+    assert np.allclose(q.to_rotation_matrix(), neg_q.to_rotation_matrix(), atol=1e-9)
+    assert not np.allclose(quaternion_to_su2(q), quaternion_to_su2(neg_q), atol=1e-9)
+    assert np.allclose(quaternion_to_su2(q), -quaternion_to_su2(neg_q), atol=1e-9)
+
+
 # ---------------------------------------------------------------------------
 # Round-trip conversion
 # ---------------------------------------------------------------------------
@@ -70,7 +121,7 @@ def test_round_trip_q_to_su2_to_q():
     q = Quaternion.from_axis_angle("y", 0.75)
     m = quaternion_to_su2(q)
     q2 = su2_to_quaternion(m)
-    # Allow for global phase: q and -q represent the same rotation
+    # Allow for global phase: q and -q represent the same Bloch/SO(3) rotation.
     same = q == q2
     negated = Quaternion(-q2.w, -q2.x, -q2.y, -q2.z) == q
     assert same or negated

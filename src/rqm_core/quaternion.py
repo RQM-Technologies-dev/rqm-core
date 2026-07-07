@@ -220,12 +220,12 @@ class Quaternion:
     def canonicalize(self) -> "Quaternion":
         """Return the canonical representative with non-negative scalar part.
 
-        Both ``q`` and ``-q`` describe the same physical rotation in SO(3).
-        For compiler canonicalization the convention ``w ≥ 0`` is chosen so
-        that each rotation has a unique shortest-geodesic representative on
-        the unit 3-sphere S³.  This keeps the half-angle ``φ ∈ [0, π/2]``
-        when possible, gives more stable numerical behaviour, and produces
-        consistent output for fused gate sequences.
+        Both ``q`` and ``-q`` describe the same physical rotation in SO(3),
+        while their SU(2) matrices differ by the global phase ``-1``.  For
+        phase-invariant compiler canonicalization the convention ``w ≥ 0`` is
+        chosen so descriptor output is deterministic.  Callers must not apply
+        this sign choice in contexts where a local global phase can become
+        observable, such as controlled operations.
 
         Returns:
             ``self.normalize()`` if its scalar part is non-negative,

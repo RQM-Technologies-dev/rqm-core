@@ -27,7 +27,7 @@ from rqm_core.su2 import is_unitary, determinant_close_to_one, quaternion_to_su2
 # ---------------------------------------------------------------------------
 
 def _su2_matrices_close(q1: Quaternion, q2: Quaternion, *, atol: float = 1e-9) -> bool:
-    """Return True if the two quaternions yield the same SU(2) matrix (up to ±sign)."""
+    """Return True if the two quaternions match in SU(2) up to global phase."""
     m1 = quaternion_to_su2(q1)
     m2 = quaternion_to_su2(q2)
     return np.allclose(m1, m2, atol=atol) or np.allclose(m1, -m2, atol=atol)

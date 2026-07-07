@@ -144,8 +144,9 @@ pair `(alpha, beta)`.  Functions that require unit norm normalize internally.
 
 ### 4 · Global Phase
 
-`q` and `−q` represent the same rotation.  `spinor_to_quaternion` encodes
-the rotation up to global phase — never rely on the sign of the scalar part.
+`q` and `−q` represent the same SO(3)/Bloch rotation, while their SU(2)
+matrices differ by a global phase of `−1`.  `spinor_to_quaternion` encodes the
+rotation up to global phase — never rely on the sign of the scalar part.
 
 ### 5 · Default Tolerance and Axis Labels
 
@@ -411,9 +412,10 @@ pytest tests/test_public_api.py -v
   `su2.is_unitary` is the public entry point for SU(2)-context callers and is
   what `rqm_core.is_unitary` resolves to in the top-level API.
 
-- **`q` and `−q` represent the same rotation.**  Round-trip conversions
-  `q → SU(2) → q` are tested against both `q` and `−q`.  Downstream code
-  must never compare quaternion scalar parts for sign equality.
+- **`q` and `−q` represent the same SO(3)/Bloch rotation, not the same SU(2)
+  matrix.**  Round-trip conversions `q → SU(2) → q` are tested against both
+  `q` and `−q` because the sign is a global phase.  Downstream code must never
+  compare quaternion scalar parts for sign equality.
 
 - **The `src/` layout** means `rqm_core` is only importable after installation
   (`pip install -e .`).  Running tests directly without installing first will

@@ -86,7 +86,12 @@ A global complex phase `e^{iθ}` applied to `|ψ⟩` does not change any
 observable.  Concretely:
 
 - Two quaternions `q` and `−q` represent **the same rotation** in SO(3) and
-  the same physical state on the Bloch sphere.
+  the same physical state on the Bloch sphere.  They are **not** literally the
+  same SU(2) matrix: `U(−q) = −U(q)`, a global phase of `−1`.
+- Treating `q` and `−q` as interchangeable is safe only in contexts where a
+  global phase is intentionally ignored.  Do not use quaternion sign folding to
+  rewrite controlled operations or other contexts where a local phase can become
+  observable.
 - `spinor_to_quaternion` encodes the rotation of `|0⟩` onto `|ψ⟩` **up to
   global phase**.  Consumers must not rely on the sign of the returned
   quaternion's scalar part.

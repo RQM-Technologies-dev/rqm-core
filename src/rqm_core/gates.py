@@ -181,8 +181,8 @@ def gate_h() -> Quaternion:
 # ---------------------------------------------------------------------------
 
 # Table of named gates and their canonical quaternions (w ≥ 0 representative).
-# We store both q and -q because they represent the same rotation; matching
-# is done by checking closeness to either representative.
+# We match both q and -q because they represent the same SO(3)/Bloch rotation;
+# their SU(2) matrices differ by a global phase.
 _NAMED_GATES: list[tuple[str, Quaternion]] = [
     ("I", gate_identity()),
     ("X", gate_x()),
@@ -197,8 +197,9 @@ _NAMED_GATES: list[tuple[str, Quaternion]] = [
 def match_gate(q: Quaternion, *, atol: float = 1e-6) -> str | None:
     """Return the name of the standard gate that *q* represents, or ``None``.
 
-    Both ``q`` and ``-q`` encode the same physical rotation; this function
-    checks closeness to both spinor representatives of each named gate.
+    Both ``q`` and ``-q`` encode the same physical SO(3)/Bloch rotation; this
+    function checks closeness to both spinor representatives of each named
+    gate.  Their SU(2) matrices differ by a global phase.
 
     Named gates checked (in order): ``"I"``, ``"X"``, ``"Y"``, ``"Z"``,
     ``"H"``, ``"S"``, ``"T"``.
