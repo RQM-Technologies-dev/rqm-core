@@ -367,6 +367,26 @@ def test_canonicalize_same_rotation_matrix():
     assert np.allclose(r1, r2, atol=1e-9)
 
 
+def test_sign_fold_preserves_so3_but_changes_controlled_su2_matrix():
+    """EXP-001 regression: sign folding cannot be used after coherent control."""
+    q_minus = Quaternion(-1.0, 0.0, 0.0, 0.0)
+    q_plus = q_minus.canonicalize()
+    assert np.allclose(q_minus.to_rotation_matrix(), q_plus.to_rotation_matrix(), atol=1e-12)
+    assert np.allclose(q_minus.to_su2_matrix(), -q_plus.to_su2_matrix(), atol=1e-12)
+
+    def controlled(matrix):
+        out = np.zeros((4, 4), dtype=complex)
+        out[:2, :2] = np.eye(2)
+        out[2:, 2:] = matrix
+        return out
+
+    assert not np.allclose(
+        controlled(q_minus.to_su2_matrix()),
+        controlled(q_plus.to_su2_matrix()),
+        atol=1e-12,
+    )
+
+
 # ---------------------------------------------------------------------------
 # to_axis_angle
 # ---------------------------------------------------------------------------
