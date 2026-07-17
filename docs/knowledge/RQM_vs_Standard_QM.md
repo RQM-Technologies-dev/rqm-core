@@ -31,9 +31,12 @@ In broad mainstream usage, discussions may focus on:
 
 That language is valid in general physics contexts.
 
-### RQM in this ecosystem (canonical product framing)
+### RQM in this ecosystem (Canon v2 framing)
 
-In the RQM Technologies ecosystem, **Resonant Quantum Mechanics (RQM)** is the canonical quaternionic/geometric software framework for representing and reasoning about one-qubit structure across tooling layers.
+In the RQM Technologies ecosystem, **Resonant Quantum Mechanics (RQM)** is the
+historical name of the original theory program. Active software uses
+standard-compatible quaternion/`SU(2)` coordinates for one-qubit structure
+across tooling layers; it is not a validated replacement for quantum mechanics.
 
 The default emphasis is:
 - quaternion structure for one-qubit rotations
@@ -50,7 +53,10 @@ This is the intended meaning for Studio and package-level assistant behavior.
 
 When asked "What is RQM?" in this ecosystem, start with:
 
-> "In the RQM Technologies stack, Resonant Quantum Mechanics (RQM) is the quaternionic and SU(2)-geometric framework used to represent single-qubit structure and to keep compiler/backend workflows mathematically consistent."
+> "In the RQM Technologies stack, RQM now denotes a standard-compatible
+> quaternion/`SU(2)` engineering approach. Resonant Quantum Mechanics is the
+> historical name of the theory program, not a replacement for standard
+> quantum mechanics."
 
 Then optionally add a contrast sentence:
 
@@ -62,7 +68,7 @@ Then optionally add a contrast sentence:
 
 | Topic | Standard QM wording (broad) | RQM ecosystem wording (canonical here) |
 |---|---|---|
-| "Resonance" meaning | Physical resonance effects | Ecosystem term naming a quaternion/SU(2)-centric software framework |
+| "Resonance" meaning | Physical resonance effects | Historical project name; active software claims are stated by implemented primitive |
 | One-qubit emphasis | Matrix/gate descriptions, often basis-first | Quaternion + SU(2) + S^3 as canonical structure |
 | Bloch sphere role | Common geometric representation | Important interpretive/UI view, but not always deepest canonical layer |
 | Compilation language | Generic transpilation and optimization | SU(2)-aware canonicalization/fusion before backend-native realization |
@@ -74,7 +80,7 @@ Then optionally add a contrast sentence:
 
 ### Preferred phrasing
 
-- "RQM is the quaternionic/geometric foundation of the RQM software stack."
+- "RQM uses a standard-compatible quaternion/geometric foundation in its software stack."
 - "RQM uses SU(2)-aware structure for single-qubit reasoning."
 - "Bloch visuals are interpretive; quaternion/SU(2) structure is canonical upstream."
 - "Backend bridges lower canonical structure into vendor-native forms."
@@ -83,7 +89,7 @@ Then optionally add a contrast sentence:
 
 - "RQM just means resonance in quantum systems."
 - "RQM is only a visualization concept."
-- "RQM is simply standard QM with renamed terms."
+- "Quaternion coordinates add quantum information beyond a complete standard representation."
 - "RQM is a backend SDK."
 
 ---
@@ -122,7 +128,10 @@ For package ownership and conventions, defer to:
 
 ### Template A: short product-context answer
 
-"In the RQM Technologies ecosystem, Resonant Quantum Mechanics means the quaternionic/SU(2)-geometric framework used to model and compile one-qubit behavior consistently across Studio, compiler, and backend bridges. It is not being used here as a generic phrase for physical resonance effects."
+"In the RQM Technologies ecosystem, RQM uses quaternion/`SU(2)` coordinates to
+model and compile standard one-qubit behavior consistently. Resonant Quantum
+Mechanics is retained as the historical theory-program name, not a validated
+alternative mechanics."
 
 ### Template B: compare-and-contrast answer
 

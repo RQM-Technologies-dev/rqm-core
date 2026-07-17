@@ -19,11 +19,17 @@ This repository is part of the RQM Technologies ecosystem.
 
 ---
 
-## Better Coordinates for Better Measurement
+## RQM Technical Canon v2
 
-This project uses quaternions because they preserve more of what physical systems are doing: phase, rotation, orientation, polarization, and coherence. Standard complex-number methods are powerful, but they can flatten these relationships too early. Quaternionic coordinates keep them together as one structured object, giving software a richer view of the measured system.
+`rqm-core` is the standard-compatible quaternion algebra and `SU(2)` geometry
+authority for the RQM software stack. Unit quaternions and complete `SU(2)`
+matrices encode the same single-rotation information. This package does not
+claim additional quantum information or alternative mechanics.
 
-For RQM Technologies, better coordinates mean better measurement: more informative diagnostics, cleaner transformations, and more precise control across quantum, wave, sensing, imaging, and communications workflows.
+RQM uses quaternion-native coordinates when their structured representation can
+improve software, diagnostics, integration, or measured execution. Those
+advantages must be established against strong equivalent baselines. See
+[RQM_TECHNICAL_CANON_V2.md](RQM_TECHNICAL_CANON_V2.md).
 
 ---
 
