@@ -13,6 +13,7 @@ Architecture layers (rqm_core → rqm_circuits → rqm_compiler → backends):
 """
 
 from rqm_core.quaternion import Quaternion
+from rqm_core.local_pair import QuaternionSU2Pair
 from rqm_core.spinor import (
     normalize_spinor,
     spinor_norm,
@@ -83,6 +84,7 @@ from rqm_core.analysis.coupling.analyze_optimization_preservation import (
 __all__ = [
     # Quaternion
     "Quaternion",
+    "QuaternionSU2Pair",
     # Spinor
     "normalize_spinor",
     "spinor_norm",
