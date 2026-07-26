@@ -4,7 +4,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/rqm-core.svg)](https://pypi.org/project/rqm-core/)
 [![Python versions](https://img.shields.io/pypi/pyversions/rqm-core.svg)](https://pypi.org/project/rqm-core/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-rqmtechnologies.com-blue.svg)](https://docs.rqmtechnologies.com)
 [![Website](https://img.shields.io/badge/website-rqmtechnologies.com-blue.svg)](https://rqmtechnologies.com)
 
