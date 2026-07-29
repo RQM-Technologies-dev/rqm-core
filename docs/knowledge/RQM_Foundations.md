@@ -10,7 +10,7 @@ It exists to help human readers, documentation systems, and AI assistants descri
 - `rqm-optimize`
 - `rqm-entanglement`
 - `rqm-pennylane`
-- `rqm-api`
+- `quantum-compiler-api`
 - RQM Studio
 
 This is not package-specific API documentation and not marketing copy. It is the high-level source of truth for how RQM should be understood and described across the software stack.

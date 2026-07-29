@@ -1,7 +1,7 @@
 """Main public entry point for circuit coupling / entanglement analysis.
 
 This module exposes :func:`analyze_circuit_coupling`, the single stable
-function that rqm-api and RQM Studio consume.
+function that quantum-compiler-api and RQM Studio consume.
 
 Two-layer design
 ----------------
@@ -93,7 +93,7 @@ def analyze_circuit_coupling(
     """Analyse the coupling / entanglement structure of *circuit*.
 
     Returns a :class:`~rqm_core.analysis.coupling.types.CouplingAnalysisResult`
-    that is ready for direct consumption by rqm-api and RQM Studio.
+    that is ready for direct consumption by quantum-compiler-api and RQM Studio.
 
     The result ``mode`` is:
     - ``"measured"`` – when ideal pure-state simulation succeeded and

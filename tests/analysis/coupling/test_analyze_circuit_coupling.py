@@ -276,7 +276,7 @@ class TestUnsupportedScope:
 
 
 class TestResultContract:
-    """Verify the stable result contract shape expected by rqm-api / Studio."""
+    """Verify the stable result contract shape expected by quantum-compiler-api / Studio."""
 
     def test_all_required_fields_present_measured(self):
         result = analyze_circuit_coupling(
