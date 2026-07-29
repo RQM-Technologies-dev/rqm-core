@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68", "wheel", "setuptools-scm>=8"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "rqm-core"
-dynamic = ["version"]
+version = "0.2.0"
 description = "Core quaternion, spinor, SU(2), and Bloch mathematics for the RQM Python ecosystem"
 authors = [{ name = "RQM Technologies" }]
 readme = "README.md"
@@ -40,7 +40,7 @@ dev = ["pytest>=7.0", "pytest-cov>=4.0"]
 
 [project.urls]
 "Homepage" = "https://rqmtechnologies.com"
-"Documentation" = "https://docs.rqmtechnologies.com"
+"Documentation" = "https://www.rqmtechnologies.com/docs/getting-started"
 "Source" = "https://github.com/RQM-Technologies-dev/rqm-core"
 "Issues" = "https://github.com/RQM-Technologies-dev/rqm-core/issues"
 
@@ -49,11 +49,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 rqm_core = ["py.typed"]
-
-[tool.setuptools_scm]
-version_scheme = "release-branch-semver"
-local_scheme = "no-local-version"
-tag_regex = "^v(?P<version>\\d+\\.\\d+\\.\\d+)$"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

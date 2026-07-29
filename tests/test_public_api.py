@@ -1,6 +1,9 @@
 """Tests that the public rqm_core API is complete and importable."""
 
+from importlib.metadata import version
+
 import pytest
+import rqm_core
 
 
 # ---------------------------------------------------------------------------
@@ -13,9 +16,8 @@ def test_package_importable():
 
 
 def test_version_present():
-    import rqm_core
     assert hasattr(rqm_core, "__version__")
-    assert rqm_core.__version__ == "0.1.0"
+    assert rqm_core.__version__ == version("rqm-core")
 
 
 # ---------------------------------------------------------------------------
