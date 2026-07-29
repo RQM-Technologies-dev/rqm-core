@@ -145,4 +145,9 @@ __all__ = [
     "analyze_optimization_preservation",
 ]
 
-__version__ = "0.1.0"
+try:
+    from importlib.metadata import PackageNotFoundError, version
+
+    __version__ = version("rqm-core")
+except PackageNotFoundError:
+    __version__ = "0.0.0+unknown"

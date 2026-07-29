@@ -5,7 +5,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/rqm-core.svg)](https://pypi.org/project/rqm-core/)
 [![Python versions](https://img.shields.io/pypi/pyversions/rqm-core.svg)](https://pypi.org/project/rqm-core/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Documentation](https://img.shields.io/badge/docs-rqmtechnologies.com-blue.svg)](https://docs.rqmtechnologies.com)
+[![Documentation](https://img.shields.io/badge/docs-rqmtechnologies.com-blue.svg)](https://www.rqmtechnologies.com/docs)
 [![Website](https://img.shields.io/badge/website-rqmtechnologies.com-blue.svg)](https://rqmtechnologies.com)
 
 ---
@@ -15,7 +15,7 @@
 This repository is part of the RQM Technologies ecosystem.
 
 → Website: https://rqmtechnologies.com  
-→ Documentation: https://docs.rqmtechnologies.com
+→ Documentation: https://www.rqmtechnologies.com/docs
 
 ---
 
@@ -76,7 +76,7 @@ Backend packages (`rqm-qiskit`, `rqm-braket`) translate optimized circuits into 
 
 ## Next Steps
 
-- Documentation: https://docs.rqmtechnologies.com
+- Documentation: https://www.rqmtechnologies.com/docs
 - Website: https://rqmtechnologies.com
 - Next package in the stack: [`rqm-circuits`](https://github.com/RQM-Technologies-dev/rqm-circuits) — the canonical external circuit IR for API and Studio workflows (rqm-circuits 0.2+)
 - After circuits: [`rqm-compiler`](https://github.com/RQM-Technologies-dev/rqm-compiler) — optimization and rewriting engine
