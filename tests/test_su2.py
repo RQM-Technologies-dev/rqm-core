@@ -7,6 +7,7 @@ import pytest
 
 from rqm_core.quaternion import Quaternion
 from rqm_core.su2 import (
+    factor_u2_global_phase,
     quaternion_to_su2,
     quaternion_to_zyz,
     quaternion_to_named_gate_sequence,
@@ -17,6 +18,61 @@ from rqm_core.su2 import (
     is_unitary,
     determinant_close_to_one,
 )
+
+
+def test_factor_u2_identity_has_zero_phase() -> None:
+    phase, special_unitary = factor_u2_global_phase(
+        np.eye(2, dtype=np.complex128)
+    )
+
+    assert phase == 0.0
+    assert np.allclose(special_unitary, np.eye(2), atol=1e-12)
+    assert determinant_close_to_one(special_unitary)
+
+
+def test_factor_u2_recovers_explicit_global_phase() -> None:
+    rotation = axis_angle_to_su2("y", 0.73)
+    source = np.exp(1j * 0.37) * rotation
+
+    phase, special_unitary = factor_u2_global_phase(source)
+
+    assert phase == pytest.approx(0.37)
+    assert np.allclose(special_unitary, rotation, atol=1e-12)
+    assert np.allclose(np.exp(1j * phase) * special_unitary, source, atol=1e-12)
+
+
+def test_factor_u2_uses_deterministic_modulo_pi_branch() -> None:
+    rotation = axis_angle_to_su2("x", -0.41)
+    source = np.exp(1j * 2.2) * rotation
+
+    phase, special_unitary = factor_u2_global_phase(source)
+
+    assert -math.pi / 2 < phase <= math.pi / 2
+    assert phase == pytest.approx(2.2 - math.pi)
+    assert np.allclose(special_unitary, -rotation, atol=1e-12)
+    assert np.allclose(np.exp(1j * phase) * special_unitary, source, atol=1e-12)
+
+
+def test_factor_u2_pauli_x_handles_negative_determinant() -> None:
+    pauli_x = np.array([[0.0, 1.0], [1.0, 0.0]], dtype=np.complex128)
+
+    phase, special_unitary = factor_u2_global_phase(pauli_x)
+
+    assert phase == pytest.approx(math.pi / 2)
+    assert determinant_close_to_one(special_unitary)
+    assert np.allclose(np.exp(1j * phase) * special_unitary, pauli_x, atol=1e-12)
+
+
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        np.eye(3, dtype=np.complex128),
+        np.array([[2.0, 0.0], [0.0, 0.5]], dtype=np.complex128),
+    ],
+)
+def test_factor_u2_rejects_non_u2_input(invalid: np.ndarray) -> None:
+    with pytest.raises(ValueError):
+        factor_u2_global_phase(invalid)
 
 
 # ---------------------------------------------------------------------------
