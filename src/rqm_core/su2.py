@@ -63,6 +63,43 @@ def su2_to_quaternion(matrix: NDArray[np.complex128]) -> Quaternion:
     return q.normalize()
 
 
+def factor_u2_global_phase(
+    matrix: NDArray[np.complex128], *, atol: float = 1e-9
+) -> tuple[float, NDArray[np.complex128]]:
+    """Factor a one-qubit U(2) operator into global phase and SU(2).
+
+    Returns ``(phase, special_unitary)`` such that
+    ``matrix ≈ exp(1j * phase) * special_unitary``.  The phase is selected
+    deterministically in ``(-π/2, π/2]`` because the factorization is unique
+    only modulo ``π``; shifting the phase by ``π`` negates the SU(2) factor and
+    therefore its quaternion while leaving the original U(2) operator intact.
+
+    Args:
+        matrix: A 2×2 unitary matrix.
+        atol: Absolute tolerance for unitary and determinant validation.
+
+    Raises:
+        ValueError: If *matrix* is not a 2×2 unitary matrix.
+    """
+
+    validate_square_matrix(matrix, expected_size=2)
+    unitary = np.asarray(matrix, dtype=np.complex128)
+    if not _is_unitary(unitary, atol=atol):
+        raise ValueError("Matrix is not unitary; cannot factor U(2) global phase.")
+
+    determinant = matrix_determinant(unitary)
+    if abs(abs(determinant) - 1.0) > atol:
+        raise ValueError("Unitary determinant does not have unit magnitude.")
+    if determinant.real < 0.0 and abs(determinant.imag) <= atol:
+        determinant_angle = math.pi
+    else:
+        determinant_angle = math.atan2(determinant.imag, determinant.real)
+    phase = _zero_small(determinant_angle / 2.0, atol=atol)
+    special_unitary = np.exp(-1j * phase) * unitary
+    validate_su2_matrix(special_unitary, atol=atol)
+    return phase, special_unitary
+
+
 def axis_angle_to_su2(axis: str, angle: float) -> NDArray[np.complex128]:
     """Build an SU(2) matrix from an axis and rotation angle.
 

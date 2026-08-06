@@ -39,6 +39,7 @@ _EXPECTED_EXPORTS = [
     "su2_identity",
     "quaternion_to_su2",
     "su2_to_quaternion",
+    "factor_u2_global_phase",
     "axis_angle_to_su2",
     "quaternion_to_zyz",
     "u1q_to_zyz",

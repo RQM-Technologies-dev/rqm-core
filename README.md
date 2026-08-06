@@ -132,6 +132,9 @@ U(q) = [[ w − iz ,  −y − ix ],
 ```
 
 Implemented in `Quaternion.to_su2_matrix()`; inverted by `su2_to_quaternion()`.
+For an ordinary one-qubit U(2) operator, `factor_u2_global_phase()` returns an
+explicit global phase and the corresponding SU(2) factor before quaternion
+conversion.
 
 ### 2 · Spinor Convention
 

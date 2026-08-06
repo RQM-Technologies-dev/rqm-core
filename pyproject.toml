@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rqm-core"
-version = "0.2.1"
+version = "0.2.2"
 description = "Core quaternion, spinor, SU(2), and Bloch mathematics for the RQM Python ecosystem"
 authors = [{ name = "RQM Technologies" }]
 readme = "README.md"
