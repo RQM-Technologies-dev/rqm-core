@@ -1,11 +1,10 @@
 # Changelog
 
-## [0.2.2] — Unreleased candidate
+## [0.2.2] — U(2) Phase Factorization
 
 - Added deterministic U(2) global-phase factorization for Qiskit-compatible
   one-qubit explanations while preserving SU(2)/quaternion ownership in
   `rqm-core`.
-- No package was published by this candidate change.
 
 ## [0.2.1](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.0...v0.2.1) (2026-07-29)
 
