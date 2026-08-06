@@ -1,10 +1,17 @@
 # Changelog
 
-## [0.2.2] — U(2) Phase Factorization
+## [0.2.2](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.1...v0.2.2) (2026-08-06)
 
-- Added deterministic U(2) global-phase factorization for Qiskit-compatible
-  one-qubit explanations while preserving SU(2)/quaternion ownership in
-  `rqm-core`.
+
+### Features
+
+* add deterministic RQM Canon publisher ([#19](https://github.com/RQM-Technologies-dev/rqm-core/issues/19)) ([bc2236c](https://github.com/RQM-Technologies-dev/rqm-core/commit/bc2236ca384ad9f4ea7113e9b1b07b8debeb5571))
+* add deterministic U(2) global-phase factorization for one-qubit explanations while preserving SU(2)/quaternion ownership ([#20](https://github.com/RQM-Technologies-dev/rqm-core/issues/20)) ([ea1677c](https://github.com/RQM-Technologies-dev/rqm-core/commit/ea1677c56505b1045574b2929da5869080e608cf))
+
+
+### Documentation
+
+* name the canonical coupling API consumer ([#17](https://github.com/RQM-Technologies-dev/rqm-core/issues/17)) ([ddf4712](https://github.com/RQM-Technologies-dev/rqm-core/commit/ddf471230bcfe26a0aab6695c65145869526d6f8))
 
 ## [0.2.1](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.0...v0.2.1) (2026-07-29)
 
