@@ -54,6 +54,14 @@ from rqm_core.linalg import (
     matrix_close,
     complex_close,
 )
+from rqm_core.operators import (
+    pauli_basis,
+    operator_to_pauli_coefficients,
+    pauli_coefficients_to_operator,
+    computational_basis_projector,
+    partial_trace_first_qubit,
+    partial_trace_second_qubit,
+)
 from rqm_core.gates import (
     gate_identity,
     gate_x,
@@ -122,6 +130,13 @@ __all__ = [
     "matrix_dagger",
     "matrix_close",
     "complex_close",
+    # Operator basis / shared linear algebra
+    "pauli_basis",
+    "operator_to_pauli_coefficients",
+    "pauli_coefficients_to_operator",
+    "computational_basis_projector",
+    "partial_trace_first_qubit",
+    "partial_trace_second_qubit",
     # Gates
     "gate_identity",
     "gate_x",
