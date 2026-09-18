@@ -112,6 +112,7 @@ across the whole ecosystem: no duplication, no conflicting conventions, and no f
 - **SU(2) conversions** – construction from quaternions and axis-angle, validation, round-trips
 - **Bloch sphere mappings** – state↔Bloch, Bloch↔state, quaternion rotation to Bloch vector
 - **Matrix helpers** – trace, determinant, conjugate transpose (dagger), norm, closeness checks
+- **Shared operator basis** – canonical Pauli basis, operator↔Pauli coefficients, computational-basis projectors, and two-qubit partial traces used by higher compiler layers
 - **Validation utilities** – axis, complex pair, matrix shape, real number, tolerance checks
 - **Compatibility coupling analysis** – legacy qualitative/measured helpers retained for existing imports; canonical nonlocal analysis now lives in `rqm-entanglement`
 
