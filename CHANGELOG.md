@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.3.0](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.2...v0.3.0) (2026-09-19)
+
+
+### Features
+
+* add shared operator-basis primitives for compiler 0.4 ([86edbca](https://github.com/RQM-Technologies-dev/rqm-core/commit/86edbca30da16b8985ef001f30fcc7b2c9f7dd88))
+* export shared operator math ([3b52565](https://github.com/RQM-Technologies-dev/rqm-core/commit/3b52565555332e6572a8238730db7c9b350ee75e))
+
+
+### Documentation
+
+* document compiler 0.4 shared operator math ([b3dc98f](https://github.com/RQM-Technologies-dev/rqm-core/commit/b3dc98f81480c769fa0359f76f67ad32a0a4d36e))
+* lock local versus relational geometry ownership ([e31eeae](https://github.com/RQM-Technologies-dev/rqm-core/commit/e31eeae94d4cd3f7a88eb3d0622ba6cd191e0e62))
+
 ## [0.2.2](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.1...v0.2.2) (2026-08-06)
 
 
