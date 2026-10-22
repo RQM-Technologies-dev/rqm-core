@@ -244,16 +244,21 @@ class Quaternion:
         Given ``q = w + x·i + y·j + z·k`` with ``|q| = 1``, the physical
         rotation angle is::
 
-            θ = 2·arccos(w)
+            θ = 2·atan2(s, w),  s = hypot(x, y, z)
 
         and the rotation axis is::
 
-            û = (x, y, z) / sin(θ/2)     if sin(θ/2) > atol
+            û = (x, y, z) / s     if s > atol
 
-        For rotations close to the identity (``θ ≈ 0``) the axis is
-        undefined; the x-axis is returned as a conventional default.
+        For rotations close to either signed identity (``θ ≈ 0`` or
+        ``θ ≈ 2π``), the x-axis is returned when ``s <= atol``.
+        This tolerance convention discards the axis of very small rotations;
+        set ``atol=0`` to retain any nonzero vector direction.
 
-        The quaternion is normalized internally before extraction.
+        The quaternion is normalized internally before extraction. Its sign is
+        preserved: q and -q generally have opposite axes and complementary
+        angles, rather than being canonicalized to the same rotation. Using
+        the vector norm avoids loss of precision from acos near ±identity.
 
         Args:
             atol: Threshold below which ``sin(θ/2)`` is considered zero
@@ -261,14 +266,13 @@ class Quaternion:
 
         Returns:
             2-tuple ``(axis, angle)`` where *axis* is a unit 3-tuple
-            ``(ux, uy, uz)`` and *angle* is in radians ``[0, 2π)``.
+            ``(ux, uy, uz)`` and *angle* is in radians ``[0, 2π]``.
+            Exact negative identity returns ``2π``. Floating-point angles
+            extremely close to that endpoint may also round to ``2π``.
         """
         q = self.normalize()
-        # Clamp w to [-1, 1] to guard against tiny floating-point errors.
-        w_clamped = max(-1.0, min(1.0, q.w))
-        half_angle = math.acos(w_clamped)
-        angle = 2.0 * half_angle
-        s = math.sin(half_angle)
+        s = math.hypot(q.x, q.y, q.z)
+        angle = 2.0 * math.atan2(s, q.w)
         if s > atol:
             axis: tuple[float, float, float] = (q.x / s, q.y / s, q.z / s)
         else:
