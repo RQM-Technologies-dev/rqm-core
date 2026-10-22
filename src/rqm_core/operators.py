@@ -35,12 +35,19 @@ def pauli_coefficients_to_operator(coefficients:Iterable[complex])->np.ndarray:
         raise ValueError("coefficients must contain exactly four values")
     return sum((coeff[i]*_PAULI[i] for i in range(4)),np.zeros((2,2),complex))
 
-def computational_basis_projector(bit:int)->np.ndarray:
-    """Return |bit><bit| for bit in {0,1}."""
-    if bit not in (0,1):
+def computational_basis_projector(bit: int | np.integer) -> np.ndarray:
+    """Return |bit><bit| for a Python or NumPy integer scalar in {0, 1}.
+
+    Boolean scalars (including NumPy booleans), floats, and arrays are not
+    basis indices. Raise ValueError for those types or an out-of-range integer.
+    """
+    if isinstance(bit, (bool, np.bool_)) or not isinstance(bit, (int, np.integer)):
+        raise ValueError("bit must be an integer scalar, not a boolean, with value 0 or 1")
+    if bit not in (0, 1):
         raise ValueError("bit must be 0 or 1")
-    v=np.zeros(2,dtype=complex);v[bit]=1
-    return np.outer(v,v.conj())
+    v = np.zeros(2, dtype=complex)
+    v[int(bit)] = 1
+    return np.outer(v, v.conj())
 
 def partial_trace_first_qubit(operator:np.ndarray)->np.ndarray:
     """Trace the first qubit from a 4x4 two-qubit operator.
