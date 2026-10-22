@@ -274,7 +274,15 @@ class Quaternion:
         s = math.hypot(q.x, q.y, q.z)
         angle = 2.0 * math.atan2(s, q.w)
         if s > atol:
-            axis: tuple[float, float, float] = (q.x / s, q.y / s, q.z / s)
+            # A subnormal hypot can have large relative rounding error. Scale
+            # the direction into the normal range before taking its norm;
+            # retain s above for the angle and the existing tolerance boundary.
+            scale = max(abs(q.x), abs(q.y), abs(q.z))
+            direction = (q.x / scale, q.y / scale, q.z / scale)
+            direction_norm = math.hypot(*direction)
+            axis: tuple[float, float, float] = tuple(
+                component / direction_norm for component in direction
+            )
         else:
             # Identity or 2π rotation – axis is arbitrary; use x by convention.
             axis = (1.0, 0.0, 0.0)

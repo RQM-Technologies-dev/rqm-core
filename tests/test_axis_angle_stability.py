@@ -42,7 +42,7 @@ def test_exact_signed_identity_and_zero_error(sign, angle):
         Quaternion(0, 0, 0, 0).to_axis_angle()
 
 
-def test_subnormal_vector_norm_does_not_square_to_zero():
+def test_normal_vector_magnitude_with_underflowing_square():
     axis, angle = Quaternion(1, 0, 1e-200, 0).to_axis_angle(atol=0)
     assert axis == (0, 1, 0)
     assert angle == pytest.approx(2e-200, rel=1e-15, abs=0)
@@ -73,3 +73,25 @@ def test_random_antipodes_keep_distinct_signed_reconstructions():
             angles.append(angle)
         np.testing.assert_allclose(axes[0], -np.array(axes[1]), atol=4e-16)
         assert sum(angles) == pytest.approx(2 * math.pi, abs=1e-15)
+
+
+@pytest.mark.parametrize('magnitude', [math.ulp(0.0), 1e-320])
+@pytest.mark.parametrize('ratios', [(1, 1, 0), (1, -2, 1)])
+@pytest.mark.parametrize('sign', [1, -1])
+def test_true_subnormal_multicomponent_direction_is_unit(magnitude, ratios, sign):
+    vector = tuple(sign * magnitude * value for value in ratios)
+    q = Quaternion(sign, *vector)
+    axis, angle = q.to_axis_angle(atol=0)
+    expected = sign * np.array(ratios) / math.sqrt(sum(v * v for v in ratios))
+    assert math.hypot(*axis) == pytest.approx(1, abs=3e-16)
+    np.testing.assert_allclose(axis, expected, rtol=0, atol=3e-16)
+    # Subnormal angle quantization is unavoidable; direction must still be unit.
+    assert 0 <= angle <= 2 * math.pi
+    if sign == 1:
+        assert angle > 0
+        assert angle < 1e-318
+    else:
+        assert angle == 2 * math.pi
+    default_axis, default_angle = q.to_axis_angle()
+    assert default_axis == (1, 0, 0)
+    assert default_angle == angle
