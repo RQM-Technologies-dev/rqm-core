@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 (maintenance candidate)
+
+### Bug Fixes
+
+* Backport the reviewed axis-angle stability correction from #22: stable signed angles near zero and 2π, and unit axes for subnormal vector components. Preserve existing tolerance and signed S³ conventions.
+* Retain the 0.2.2 public exports and dependencies; no 0.3.0 operator additions are included.
+
 ## [0.2.2](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.1...v0.2.2) (2026-08-06)
 
 
