@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.3.0...v0.3.1) (2026-11-01)
+
+
+### Bug Fixes
+
+* preserve exact SU2 scalar phase in quaternion exports ([#25](https://github.com/RQM-Technologies-dev/rqm-core/issues/25)) ([1c0913a](https://github.com/RQM-Technologies-dev/rqm-core/commit/1c0913afb3cb7549140f98152452e9ea895c4830))
+
 ## [0.3.0](https://github.com/RQM-Technologies-dev/rqm-core/compare/v0.2.2...v0.3.0) (2026-10-22)
 
 
