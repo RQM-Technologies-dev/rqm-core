@@ -40,7 +40,7 @@ def su2_to_quaternion(matrix: NDArray[np.complex128]) -> Quaternion:
         matrix: 2×2 complex SU(2) matrix.
 
     Returns:
-        Corresponding unit quaternion (with positive scalar part by convention).
+        Corresponding unit quaternion retaining the SU(2) sign.
 
     Raises:
         ValueError: If *matrix* is not unitary.
@@ -90,11 +90,11 @@ def factor_u2_global_phase(
     determinant = matrix_determinant(unitary)
     if abs(abs(determinant) - 1.0) > atol:
         raise ValueError("Unitary determinant does not have unit magnitude.")
-    if determinant.real < 0.0 and abs(determinant.imag) <= atol:
+    if determinant.real < 0.0 and determinant.imag == 0.0:
         determinant_angle = math.pi
     else:
         determinant_angle = math.atan2(determinant.imag, determinant.real)
-    phase = _zero_small(determinant_angle / 2.0, atol=atol)
+    phase = determinant_angle / 2.0
     special_unitary = np.exp(-1j * phase) * unitary
     validate_su2_matrix(special_unitary, atol=atol)
     return phase, special_unitary
@@ -131,8 +131,8 @@ def _wrap_to_pi(angle: float) -> float:
 
 
 def _zero_small(angle: float, *, atol: float) -> float:
-    """Clamp tiny angles to exact zero for deterministic output."""
-    if abs(angle) <= atol:
+    """Normalize signed zero; retain nonzero rotations regardless of size."""
+    if angle == 0.0:
         return 0.0
     return angle
 
@@ -143,15 +143,15 @@ def _axis_sequence_if_pure_rotation(
     """Return a single-axis named gate sequence when *q* is axis-aligned."""
     x, y, z = q.x, q.y, q.z
 
-    # A pure axis rotation has exactly one meaningful imaginary component.
-    if abs(y) <= atol and abs(z) <= atol and abs(x) > atol:
-        angle = _zero_small(_wrap_to_pi(2.0 * math.atan2(x, q.w)), atol=atol)
+    # A pure axis rotation has exactly one nonzero imaginary component.
+    if y == 0 and z == 0 and x != 0:
+        angle = _zero_small(2.0 * math.atan2(x, q.w), atol=atol)
         return (("RX", angle),) if angle != 0.0 else tuple()
-    if abs(x) <= atol and abs(z) <= atol and abs(y) > atol:
-        angle = _zero_small(_wrap_to_pi(2.0 * math.atan2(y, q.w)), atol=atol)
+    if x == 0 and z == 0 and y != 0:
+        angle = _zero_small(2.0 * math.atan2(y, q.w), atol=atol)
         return (("RY", angle),) if angle != 0.0 else tuple()
-    if abs(x) <= atol and abs(y) <= atol and abs(z) > atol:
-        angle = _zero_small(_wrap_to_pi(2.0 * math.atan2(z, q.w)), atol=atol)
+    if x == 0 and y == 0 and z != 0:
+        angle = _zero_small(2.0 * math.atan2(z, q.w), atol=atol)
         return (("RZ", angle),) if angle != 0.0 else tuple()
     return None
 
@@ -168,19 +168,18 @@ def su2_to_named_gate_sequence(
 
     * Primary decomposition is Euler ZYZ in named-gate form
       ``RZ(φ) -> RY(θ) -> RZ(λ)``.
-    * Returned angles are normalized to ``(-π, π]`` and tiny values
-      ``|angle| <= atol`` are clamped to exactly ``0`` for determinism.
-    * Near-identity rotations (``θ ≈ 0`` and vanishing Z phase) return an
-      empty sequence ``()``.
+    * Angles retain their SU(2) lift; wrapping individual rotations by 2π
+      would discard a scalar minus sign. Nonzero tiny angles are retained.
+    * Only exact identity returns an empty sequence ``()``.
     * If ``simplify_axis=True`` and the element is a pure x/y/z-axis
-      rotation within *atol*, return a single ``RX``/``RY``/``RZ`` gate.
+      rotation with exactly zero off-axis components, return a single ``RX``/``RY``/``RZ`` gate.
 
     The decomposition is backend-agnostic and contains no provider policy.
 
     Args:
         matrix: 2×2 SU(2) matrix.
         simplify_axis: Enable safe single-axis simplification.
-        atol: Absolute tolerance for unitary checks and zero-clamping.
+        atol: Absolute tolerance for unitary checks, not an approximation budget.
 
     Returns:
         Tuple of ``(gate_name, angle)`` entries.
@@ -196,18 +195,18 @@ def su2_to_named_gate_sequence(
 
     c = abs(alpha)
     s = abs(beta)
-    theta = _zero_small(_wrap_to_pi(2.0 * math.atan2(s, c)), atol=atol)
+    theta = _zero_small(2.0 * math.atan2(s, c), atol=atol)
 
-    # Near-RZ branch (theta ≈ 0): only sum (φ + λ) is observable.
+    # Exact RZ branch (theta = 0): only sum (φ + λ) is observable.
     # Deterministic gauge choice: set φ = 0, keep λ from alpha phase.
-    if abs(theta) <= atol:
+    if theta == 0.0:
         phi = 0.0
-        lambd = _zero_small(_wrap_to_pi(-2.0 * math.atan2(alpha.imag, alpha.real)), atol=atol)
+        lambd = _zero_small(-2.0 * math.atan2(alpha.imag, alpha.real), atol=atol)
     else:
         a = math.atan2(alpha.imag, alpha.real)  # a = arg(alpha)
         b = math.atan2(beta.imag, beta.real)    # b = arg(beta)
-        phi = _zero_small(_wrap_to_pi(b - a), atol=atol)
-        lambd = _zero_small(_wrap_to_pi(-a - b), atol=atol)
+        phi = _zero_small(b - a, atol=atol)
+        lambd = _zero_small(-a - b, atol=atol)
 
     q = su2_to_quaternion(m)
     if simplify_axis:
@@ -346,3 +345,21 @@ def validate_su2_matrix(
         raise ValueError(
             f"Matrix determinant is {det:.6g}, expected 1; not a valid SU(2) matrix."
         )
+
+
+def scalar_phase_to_named_gate_sequence(phase: float) -> tuple[tuple[str, float], ...]:
+    """Represent exp(i*phase) I exactly using a phase shift and an RZ rotation.
+
+    This carrier preserves scalar phase when an IR has named gates but no
+    circuit-global phase field. Either wire of a larger circuit may carry it.
+    Nonzero phases are never clamped or reduced modulo a rotation period.
+    """
+    phase = float(phase)
+    if not math.isfinite(phase):
+        raise ValueError("Scalar phase must be finite.")
+    if phase == 0.0:
+        return ()
+    angle = 2.0 * phase
+    if not math.isfinite(angle):
+        raise ValueError("Scalar phase is too large to represent with finite gate angles.")
+    return (("phaseshift", angle), ("rz", -angle))
