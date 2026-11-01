@@ -283,10 +283,10 @@ def test_named_decomposition_identity_is_empty():
     assert seq == tuple()
 
 
-def test_named_decomposition_near_identity_is_empty():
+def test_named_decomposition_preserves_tiny_rotation():
     q = Quaternion.from_axis_angle("z", 1e-12)
     seq = quaternion_to_named_gate_sequence(q, atol=1e-9)
-    assert seq == tuple()
+    assert seq == (("RZ", pytest.approx(1e-12, abs=1e-20)),)
 
 
 def test_named_decomposition_pure_z_is_deterministic():

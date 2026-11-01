@@ -451,3 +451,24 @@ Planned additions for future minor versions:
 - [ ] Support for additional gate sets in the 2-qubit simulator
 
 No Qiskit or framework dependencies will ever be added to this package.
+
+### Exact operator export and scalar phase
+
+`rqm_core.su2.su2_to_named_gate_sequence` preserves the signed SU(2)
+operator, including `-I` and nonzero tiny rotations. Its tuple is in matrix
+product order: `(RZ(phi), RY(theta), RZ(lambda))` represents
+`RZ(phi) @ RY(theta) @ RZ(lambda)`; execution-order APIs must reverse this
+sequence. Individual angles are not reduced modulo `2*pi`, which would
+change the scalar phase. `atol` validates inputs; it is not permission to
+approximate a nonzero rotation by identity. Consumers relying on the old
+small-angle elision or `(-pi, pi]` angle range must handle this change.
+
+For a named-gate IR without circuit-global phase metadata,
+`rqm_core.su2.scalar_phase_to_named_gate_sequence(phase)` returns a
+`phaseshift(2*phase), rz(-2*phase)` carrier for `exp(i*phase) * I`. Both
+operations must be preserved as a pair. Applying the pair to either wire
+of a larger circuit supplies that scalar to the whole operator; placing
+the pair inside a controlled block instead makes the phase relative to
+the control's other branch. Terminal state-ray equivalence must not be
+substituted for exact controlled-block equivalence. This helper does not
+qualify any downstream controlled-circuit serializer or backend.
