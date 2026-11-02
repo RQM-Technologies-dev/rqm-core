@@ -122,14 +122,6 @@ def su2_identity() -> NDArray[np.complex128]:
     return np.eye(2, dtype=np.complex128)
 
 
-def _wrap_to_pi(angle: float) -> float:
-    """Normalize an angle into ``(-π, π]`` deterministically."""
-    wrapped = (angle + math.pi) % (2.0 * math.pi) - math.pi
-    if wrapped <= -math.pi:
-        return math.pi
-    return wrapped
-
-
 def _zero_small(angle: float, *, atol: float) -> float:
     """Normalize signed zero; retain nonzero rotations regardless of size."""
     if angle == 0.0:
