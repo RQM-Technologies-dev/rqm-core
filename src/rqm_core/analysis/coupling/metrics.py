@@ -216,16 +216,6 @@ def _interpret_entropy(value: float) -> str:
     return "partial entanglement entropy"
 
 
-def _interpret_fidelity(value: float) -> str:
-    if value > 1.0 - ENTANGLEMENT_TOLERANCE:
-        return "identical states"
-    if value > 0.99:
-        return "near-identical states"
-    if value > 0.9:
-        return "high similarity"
-    return "distinct states"
-
-
 # ---------------------------------------------------------------------------
 # Composite metric computation
 # ---------------------------------------------------------------------------
